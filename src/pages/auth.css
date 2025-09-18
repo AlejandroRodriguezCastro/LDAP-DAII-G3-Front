@@ -1,0 +1,21 @@
+/* auth.css */
+.auth-links {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.auth-message {
+  margin-top: 0.8rem;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.success-text {
+  color: #16a34a;
+}
+
+.error-text {
+  color: #dc2626;
+}
