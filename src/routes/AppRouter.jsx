@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import ForgotPassword from "../pages/ForgotPassword";
+import Admin from "../pages/Admin";
+import PrivateRoute from "./PrivateRouter";
 
 const AppRouter = () => (
   <BrowserRouter>
@@ -9,6 +11,14 @@ const AppRouter = () => (
       <Route path="/" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route
+        path="/admin"
+        element={
+          <PrivateRoute role="admin">
+            <Admin />
+          </PrivateRoute>
+        }
+      />
       <Route path="/home" element={<div className="p-8">🏙 Bienvenido a CityPass!</div>} />
     </Routes>
   </BrowserRouter>

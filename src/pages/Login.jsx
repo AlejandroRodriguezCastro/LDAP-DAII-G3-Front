@@ -23,8 +23,13 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     try {
-      await authService.login(data);
-      navigate("/home");
+      const { user } = await authService.login(data);
+
+      if (user.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/home");
+      }
     } catch (err) {
       setError(err.message);
     }
