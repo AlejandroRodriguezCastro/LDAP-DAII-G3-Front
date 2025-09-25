@@ -6,22 +6,22 @@ import "./admin.css";
 
 const Admin = () => {
   const [users, setUsers] = useState([]);
-  const [newUser, setNewUser] = useState({ name: "", email: "", role: "user" });
+  const [newUser, setNewUser] = useState({ name: "", email: "", role: "user", organization: "" });
   const [editingUser, setEditingUser] = useState(null);
+  const [filterOrg, setFilterOrg] = useState("");
 
   const navigate = useNavigate();
 
-  // cargar usuarios
   useEffect(() => {
     userService.getUsers().then(setUsers);
   }, []);
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    if (!newUser.name || !newUser.email) return;
+    if (!newUser.name || !newUser.email || !newUser.organization) return;
     const created = await userService.createUser(newUser);
     setUsers([...users, created]);
-    setNewUser({ name: "", email: "", role: "user" });
+    setNewUser({ name: "", email: "", role: "user", organization: "" });
   };
 
   const handleUpdate = async (id, updatedData) => {
@@ -40,15 +40,33 @@ const Admin = () => {
     navigate("/");
   };
 
+  // Organizaciones únicas para el filtro
+  const organizations = [...new Set(users.map((u) => u.organization))];
+
+  const filteredUsers = filterOrg
+    ? users.filter((u) => u.organization === filterOrg)
+    : users;
+
   return (
     <div className="admin-container">
       <h1 className="admin-title">Administración de Usuarios</h1>
 
-      {/* Botón logout */}
       <div style={{ textAlign: "right", marginBottom: "1rem" }}>
         <button className="btn-small btn-delete" onClick={handleLogout}>
           Cerrar sesión
         </button>
+      </div>
+
+      {/* Filtro por organización */}
+      <div className="filter-bar">
+        <select value={filterOrg} onChange={(e) => setFilterOrg(e.target.value)}>
+          <option value="">Todas las organizaciones</option>
+          {organizations.map((org) => (
+            <option key={org} value={org}>
+              {org}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Alta usuario */}
@@ -65,30 +83,38 @@ const Admin = () => {
           value={newUser.email}
           onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
         />
+        <input
+          type="text"
+          placeholder="Organización"
+          value={newUser.organization}
+          onChange={(e) => setNewUser({ ...newUser, organization: e.target.value })}
+        />
         <select
           value={newUser.role}
           onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
         >
           <option value="user">Usuario</option>
           <option value="admin">Administrador</option>
+          <option value="super">Super Usuario</option>
         </select>
         <button className="btn-small btn-save" type="submit">
           Crear
         </button>
       </form>
 
-      {/* Tabla de usuarios */}
+      {/* Tabla */}
       <table className="user-table">
         <thead>
           <tr>
             <th>Nombre</th>
             <th>Email</th>
+            <th>Organización</th>
             <th>Rol</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {users.map((u) => (
+          {filteredUsers.map((u) => (
             <tr key={u.id}>
               <td>
                 {editingUser?.id === u.id ? (
@@ -118,6 +144,19 @@ const Admin = () => {
               </td>
               <td>
                 {editingUser?.id === u.id ? (
+                  <input
+                    type="text"
+                    value={editingUser.organization}
+                    onChange={(e) =>
+                      setEditingUser({ ...editingUser, organization: e.target.value })
+                    }
+                  />
+                ) : (
+                  u.organization
+                )}
+              </td>
+              <td>
+                {editingUser?.id === u.id ? (
                   <select
                     value={editingUser.role}
                     onChange={(e) =>
@@ -126,6 +165,7 @@ const Admin = () => {
                   >
                     <option value="user">Usuario</option>
                     <option value="admin">Administrador</option>
+                    <option value="super">Super Usuario</option>
                   </select>
                 ) : (
                   u.role
