@@ -11,6 +11,7 @@ const Admin = () => {
   const [filterOrg, setFilterOrg] = useState("");
 
   const navigate = useNavigate();
+  const currentUser = authService.getUser(); // 👈 leer usuario logueado
 
   useEffect(() => {
     userService.getUsers().then(setUsers);
@@ -18,7 +19,10 @@ const Admin = () => {
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    if (!newUser.name || !newUser.email || !newUser.organization) return;
+    // validación: solo super admin requiere organización
+    if (!newUser.name || !newUser.email) return;
+    if (currentUser?.role === "super" && !newUser.organization) return;
+
     const created = await userService.createUser(newUser);
     setUsers([...users, created]);
     setNewUser({ name: "", email: "", role: "user", organization: "" });
@@ -40,12 +44,15 @@ const Admin = () => {
     navigate("/");
   };
 
-  // Organizaciones únicas para el filtro
-  const organizations = [...new Set(users.map((u) => u.organization))];
+  // Solo si es super mostramos filtro por organización
+  const organizations = currentUser?.role === "super" 
+    ? [...new Set(users.map((u) => u.organization))] 
+    : [];
 
-  const filteredUsers = filterOrg
-    ? users.filter((u) => u.organization === filterOrg)
-    : users;
+  const filteredUsers =
+    currentUser?.role === "super" && filterOrg
+      ? users.filter((u) => u.organization === filterOrg)
+      : users;
 
   return (
     <div className="admin-container">
@@ -57,17 +64,19 @@ const Admin = () => {
         </button>
       </div>
 
-      {/* Filtro por organización */}
-      <div className="filter-bar">
-        <select value={filterOrg} onChange={(e) => setFilterOrg(e.target.value)}>
-          <option value="">Todas las organizaciones</option>
-          {organizations.map((org) => (
-            <option key={org} value={org}>
-              {org}
-            </option>
-          ))}
-        </select>
-      </div>
+      {/* Filtro solo visible para super */}
+      {currentUser?.role === "super" && (
+        <div className="filter-bar">
+          <select value={filterOrg} onChange={(e) => setFilterOrg(e.target.value)}>
+            <option value="">Todas las organizaciones</option>
+            {organizations.map((org) => (
+              <option key={org} value={org}>
+                {org}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Alta usuario */}
       <form className="form-inline" onSubmit={handleCreate}>
@@ -83,12 +92,17 @@ const Admin = () => {
           value={newUser.email}
           onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
         />
-        <input
-          type="text"
-          placeholder="Organización"
-          value={newUser.organization}
-          onChange={(e) => setNewUser({ ...newUser, organization: e.target.value })}
-        />
+
+        {/* Campo organización visible solo para super */}
+        {currentUser?.role === "super" && (
+          <input
+            type="text"
+            placeholder="Organización"
+            value={newUser.organization}
+            onChange={(e) => setNewUser({ ...newUser, organization: e.target.value })}
+          />
+        )}
+
         <select
           value={newUser.role}
           onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
@@ -108,7 +122,7 @@ const Admin = () => {
           <tr>
             <th>Nombre</th>
             <th>Email</th>
-            <th>Organización</th>
+            {currentUser?.role === "super" && <th>Organización</th>}
             <th>Rol</th>
             <th>Acciones</th>
           </tr>
@@ -142,19 +156,24 @@ const Admin = () => {
                   u.email
                 )}
               </td>
-              <td>
-                {editingUser?.id === u.id ? (
-                  <input
-                    type="text"
-                    value={editingUser.organization}
-                    onChange={(e) =>
-                      setEditingUser({ ...editingUser, organization: e.target.value })
-                    }
-                  />
-                ) : (
-                  u.organization
-                )}
-              </td>
+
+              {/* Columna org visible solo para super */}
+              {currentUser?.role === "super" && (
+                <td>
+                  {editingUser?.id === u.id ? (
+                    <input
+                      type="text"
+                      value={editingUser.organization}
+                      onChange={(e) =>
+                        setEditingUser({ ...editingUser, organization: e.target.value })
+                      }
+                    />
+                  ) : (
+                    u.organization
+                  )}
+                </td>
+              )}
+
               <td>
                 {editingUser?.id === u.id ? (
                   <select

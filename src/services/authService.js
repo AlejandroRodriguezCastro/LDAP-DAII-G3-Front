@@ -2,7 +2,18 @@
 
 export const authService = {
   login: async ({ email, password }) => {
-    // Ejemplo: dos usuarios hardcodeados
+    // Super Admin
+    if (email === "super@citypass.com" && password === "12345678") {
+      const token = "fake-super-token";
+      const user = { email, role: "super" };
+
+      localStorage.setItem("authToken", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      return { success: true, token, user };
+    }
+
+    // Admin normal
     if (email === "admin@citypass.com" && password === "12345678") {
       const token = "fake-admin-token";
       const user = { email, role: "admin" };
@@ -13,6 +24,7 @@ export const authService = {
       return { success: true, token, user };
     }
 
+    // Usuario común
     if (email === "test@citypass.com" && password === "12345678") {
       const token = "fake-user-token";
       const user = { email, role: "user" };
@@ -27,12 +39,10 @@ export const authService = {
   },
 
   register: async ({ email, password, name }) => {
-    // en real se valida contra backend
     if (email === "test@citypass.com") {
       throw new Error("El email ya está registrado");
     }
 
-    // simula creación
     const token = "fake-new-user-token";
     const user = { email, role: "user", name };
 
@@ -43,7 +53,6 @@ export const authService = {
   },
 
   recoverPassword: async (email) => {
-    // siempre respondemos éxito por seguridad
     return { success: true };
   },
 

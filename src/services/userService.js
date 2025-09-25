@@ -4,7 +4,7 @@
 let users = [
   { id: 1, name: "Juan Pérez", email: "juan@example.com", role: "user", organization: "Org A" },
   { id: 2, name: "Ana García", email: "ana@example.com", role: "admin", organization: "Org B" },
-  { id: 3, name: "Carlos Ruiz", email: "carlos@example.com", role: "super_user", organization: "Org Central" },
+  { id: 3, name: "Carlos Ruiz", email: "carlos@example.com", role: "super", organization: "Org Central" },
 ];
 
 export const userService = {

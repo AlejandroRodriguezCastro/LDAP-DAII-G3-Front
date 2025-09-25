@@ -11,6 +11,8 @@ const AppRouter = () => (
       <Route path="/" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+
+      {/* Admin y Super entran */}
       <Route
         path="/admin"
         element={
@@ -19,7 +21,12 @@ const AppRouter = () => (
           </PrivateRoute>
         }
       />
-      <Route path="/home" element={<div className="p-8">🏙 Bienvenido a CityPass!</div>} />
+
+      {/* Pantalla normal */}
+      <Route
+        path="/home"
+        element={<div className="p-8">🏙 Bienvenido a CityPass!</div>}
+      />
     </Routes>
   </BrowserRouter>
 );

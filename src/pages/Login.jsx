@@ -3,10 +3,10 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { Link, useNavigate } from "react-router-dom";
-import FormInput from "../components/FormInput";
-import Button from "../components/Button";
-import AuthLayout from "../components/AuthLayout";
-import { authService } from "../services/authService";
+import FormInput from "../components/FormInput.jsx";
+import Button from "../components/Button.jsx";
+import AuthLayout from "../components/AuthLayout.jsx";
+import { authService } from "../services/authService.js";
 import "./auth.css";
 
 const schema = yup.object({
@@ -17,7 +17,7 @@ const schema = yup.object({
 const Login = () => {
   const navigate = useNavigate();
   const [error, setError] = useState("");
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
     resolver: yupResolver(schema),
   });
 
@@ -25,7 +25,8 @@ const Login = () => {
     try {
       const { user } = await authService.login(data);
 
-      if (user.role === "admin") {
+      // 🔑 Redirección según rol
+      if (user.role === "admin" || user.role === "super") {
         navigate("/admin");
       } else {
         navigate("/home");
@@ -38,10 +39,12 @@ const Login = () => {
   return (
     <AuthLayout title="Iniciar sesión">
       <form onSubmit={handleSubmit(onSubmit)}>
-        <FormInput label="Email" type="email" register={register("email")} error={errors.email} />
-        <FormInput label="Contraseña" type="password" register={register("password")} error={errors.password} />
-        {error && <p className="error-text">{error}</p>}
-        <Button type="submit">Iniciar sesión</Button>
+        <FormInput id="email" label="Email" type="email" register={register("email")} error={errors.email} />
+        <FormInput id="password" label="Contraseña" type="password" register={register("password")} error={errors.password} />
+        {error && <p className="error-text" role="alert">{error}</p>}
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Ingresando..." : "Iniciar sesión"}
+        </Button>
       </form>
       <div className="auth-links">
         <Link to="/forgot-password">¿Olvidaste tu contraseña?</Link>
