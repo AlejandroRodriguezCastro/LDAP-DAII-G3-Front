@@ -1,8 +1,10 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import Admin from "../pages/Admin";
+import { authService } from "../services/authService"; // 👈 para acceder al mock
 
+// Mock de userService
 jest.mock("../services/userService", () => ({
   userService: {
     getUsers: jest.fn().mockResolvedValue([
@@ -14,14 +16,21 @@ jest.mock("../services/userService", () => ({
   },
 }));
 
-jest.mock("../services/authService", () => ({
-  authService: {
-    getUser: jest.fn(() => ({ id: "me", role: "super" })), // super => organización requerida
-    logout: jest.fn(),
-  },
-}));
+// Mock de authService
+jest.mock("../services/authService", () => {
+  return {
+    authService: {
+      getUser: jest.fn(() => ({ id: "me", role: "super" })), // rol super
+      logout: jest.fn(),
+    },
+  };
+});
 
 describe("Admin Page", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it("renderiza usuarios", async () => {
     render(
       <BrowserRouter>
@@ -38,10 +47,8 @@ describe("Admin Page", () => {
       </BrowserRouter>
     );
 
-    // Esperar que cargue la tabla inicial
     await screen.findByText("Juan");
 
-    // Completar formulario (incluye Organización porque el rol es super)
     fireEvent.change(screen.getByPlaceholderText(/Nombre/i), {
       target: { value: "Ana" },
     });
@@ -51,13 +58,74 @@ describe("Admin Page", () => {
     fireEvent.change(screen.getByPlaceholderText(/Organización/i), {
       target: { value: "Org B" },
     });
-    fireEvent.change(screen.getByDisplayValue("Usuario"), {
-      target: { value: "user" },
-    });
 
     fireEvent.click(screen.getByRole("button", { name: /crear/i }));
 
-    // Debería aparecer "Ana" en la tabla
     expect(await screen.findByText("Ana")).toBeInTheDocument();
+  });
+
+  it("permite editar usuario", async () => {
+    render(
+      <BrowserRouter>
+        <Admin />
+      </BrowserRouter>
+    );
+
+    await screen.findByText("Juan");
+
+    fireEvent.click(screen.getByRole("button", { name: /editar/i }));
+
+    const input = screen.getByDisplayValue("Juan");
+    fireEvent.change(input, { target: { value: "Juan Editado" } });
+
+    fireEvent.click(screen.getByRole("button", { name: /guardar/i }));
+
+    expect(await screen.findByText("Juan Editado")).toBeInTheDocument();
+  });
+
+  it("permite eliminar usuario", async () => {
+    render(
+      <BrowserRouter>
+        <Admin />
+      </BrowserRouter>
+    );
+
+    await screen.findByText("Juan");
+
+    fireEvent.click(screen.getByRole("button", { name: /eliminar/i }));
+
+    await waitFor(() =>
+      expect(screen.queryByText("Juan")).not.toBeInTheDocument()
+    );
+  });
+
+  it("aplica filtro de organización", async () => {
+    render(
+        <BrowserRouter>
+        <Admin />
+        </BrowserRouter>
+    );
+
+    await screen.findByText("Juan");
+
+    // ✅ agarramos el primer select (el de filtro)
+    const selects = screen.getAllByRole("combobox");
+    fireEvent.change(selects[0], { target: { value: "Org A" } });
+
+    expect(screen.getByText("Juan")).toBeInTheDocument();
+  });
+
+  it("cierra sesión correctamente", async () => {
+    render(
+      <BrowserRouter>
+        <Admin />
+      </BrowserRouter>
+    );
+
+    await screen.findByText("Juan");
+
+    fireEvent.click(screen.getByRole("button", { name: /cerrar sesión/i }));
+
+    expect(authService.logout).toHaveBeenCalled(); // ✅
   });
 });
