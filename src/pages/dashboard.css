@@ -1,0 +1,76 @@
+.dashboard-container {
+  padding: 2rem;
+  background-color: #f9fafb;
+  min-height: 100vh;
+}
+
+.dashboard-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+/* Filtros */
+.filter-bar {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.filter-bar select {
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: #fff;
+}
+
+/* Resultado de filtros */
+.filter-result {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+  color: #374151;
+}
+
+/* Gráficos */
+.charts-grid {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+.chart-box {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  text-align: center;
+}
+
+/* Tabla */
+.recent-users {
+  margin-top: 2rem;
+}
+.recent-users table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.recent-users th, .recent-users td {
+  border: 1px solid #e5e7eb;
+  padding: 0.8rem;
+  text-align: left;
+}
+.recent-users th {
+  background: #f3f4f6;
+  font-weight: 600;
+}
+.recent-users tr:nth-child(even) {
+  background: #fafafa;
+}

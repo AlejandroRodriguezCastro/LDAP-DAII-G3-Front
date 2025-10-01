@@ -3,6 +3,7 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import ForgotPassword from "../pages/ForgotPassword";
 import Admin from "../pages/Admin";
+import Dashboard from "../pages/Dashboard";
 import PrivateRoute from "./PrivateRouter";
 
 const AppRouter = () => (
@@ -21,7 +22,14 @@ const AppRouter = () => (
           </PrivateRoute>
         }
       />
-
+      <Route
+        path="/dashboard"
+        element={
+          <PrivateRoute role="super">
+            <Dashboard />
+          </PrivateRoute>
+        }
+      />
       {/* Pantalla normal */}
       <Route
         path="/home"

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { userService } from "../services/userService";
 import { authService } from "../services/authService";
+import { Link } from "react-router-dom";
 import "./admin.css";
 
 const Admin = () => {
@@ -115,6 +116,14 @@ const Admin = () => {
           Crear
         </button>
       </form>
+
+      {currentUser?.role === "super" && (
+        <div style={{ marginBottom: "1rem" }}>
+          <Link to="/dashboard">
+            <button className="btn-small btn-edit">Ir al Dashboard</button>
+          </Link>
+        </div>
+      )}
 
       {/* Tabla */}
       <table className="user-table">
