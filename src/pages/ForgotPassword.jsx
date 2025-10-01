@@ -10,27 +10,51 @@ import { authService } from "../services/authService";
 import "./auth.css";
 
 const schema = yup.object({
-  email: yup.string().email("Email inválido").required("El email es obligatorio"),
+  email: yup
+    .string()
+    .email("Email inválido")
+    .required("El email es obligatorio"),
 });
 
 const ForgotPassword = () => {
   const [message, setMessage] = useState("");
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
     resolver: yupResolver(schema),
   });
 
   const onSubmit = async (data) => {
     await authService.recoverPassword(data.email);
-    setMessage("Si el email existe, recibirás un enlace para restablecer tu contraseña.");
+    setMessage(
+      "Si el email existe, recibirás un enlace para restablecer tu contraseña."
+    );
   };
 
   return (
     <AuthLayout title="Recuperar contraseña">
       <form onSubmit={handleSubmit(onSubmit)}>
-        <FormInput label="Email" type="email" register={register("email")} error={errors.email} />
-        {message && <p className="success-text">{message}</p>}
+        {/* Input con id para que el label se conecte */}
+        <FormInput
+          id="email"
+          label="Email"
+          type="email"
+          register={register("email")}
+          error={errors.email}
+        />
+
+        {/* Mensaje de éxito */}
+        {message && (
+          <p className="success-text" role="alert">
+            {message}
+          </p>
+        )}
+
         <Button type="submit">Enviar</Button>
       </form>
+
       <div className="auth-message">
         <Link to="/">Volver a Iniciar sesión</Link>
       </div>
