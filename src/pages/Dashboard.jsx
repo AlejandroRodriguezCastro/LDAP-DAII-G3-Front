@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
-import { userService } from "../services/userService.js";
-import { authService } from "../services/authService.js";
+import { userServiceReal } from "../services/userService.js";
 import { useNavigate } from "react-router-dom";
 import "./dashboard.css";
 
 const COLORS = ["#4f46e5", "#16a34a", "#dc2626", "#f59e0b", "#0ea5e9"];
+
+// Definido fuera del componente para no recrearse en cada render
+const currentUser = {
+  role: "super",
+  organization: "Org Central"
+};
 
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
@@ -13,14 +18,13 @@ const Dashboard = () => {
   const [filterRole, setFilterRole] = useState("");
 
   const navigate = useNavigate();
-  const currentUser = authService.getUser();
 
   useEffect(() => {
     if (currentUser?.role !== "super") {
       navigate("/home"); // solo super puede entrar
     }
-    userService.getUsers().then(setUsers);
-  }, [currentUser, navigate]);
+    userServiceReal.getUsers().then(setUsers);
+  }, [navigate]); // quitamos currentUser de dependencias
 
   // aplicar filtros dinámicos
   const filteredUsers = users.filter((u) => {
@@ -29,14 +33,14 @@ const Dashboard = () => {
     return matchOrg && matchRole;
   });
 
-  // por organización (dentro de usuarios filtrados)
+  // por organización
   const orgCount = filteredUsers.reduce((acc, u) => {
     acc[u.organization] = (acc[u.organization] || 0) + 1;
     return acc;
   }, {});
   const orgData = Object.entries(orgCount).map(([name, value]) => ({ name, value }));
 
-  // por rol (dentro de usuarios filtrados)
+  // por rol
   const roleCount = filteredUsers.reduce((acc, u) => {
     acc[u.role] = (acc[u.role] || 0) + 1;
     return acc;
@@ -135,9 +139,9 @@ const Dashboard = () => {
           </thead>
           <tbody>
             {filteredUsers.map((u) => (
-              <tr key={u.id}>
-                <td>{u.name}</td>
-                <td>{u.email}</td>
+              <tr key={u.mail}>
+                <td>{u.first_name + " " + u.last_name}</td>
+                <td>{u.mail}</td>
                 <td>{u.role}</td>
                 <td>{u.organization}</td>
               </tr>

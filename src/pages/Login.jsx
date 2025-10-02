@@ -6,7 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import FormInput from "../components/FormInput.jsx";
 import Button from "../components/Button.jsx";
 import AuthLayout from "../components/AuthLayout.jsx";
-import { authService } from "../services/authService.js";
+import { authServiceReal } from "../services/authService.js";
 import "./auth.css";
 
 const schema = yup.object({
@@ -31,14 +31,15 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     try {
-      const { user } = await authService.login(data);
+      const { user } = await authServiceReal.login(data);
 
       // 🔑 Redirección según rol
-      if (user.role === "admin" || user.role === "super") {
-        navigate("/admin");
-      } else {
-        navigate("/home");
-      }
+      // if (user.role === "admin" || user.role === "super") {
+      //   navigate("/admin");
+      // } else {
+      //   navigate("/home");
+      // }
+      navigate("/admin");
     } catch (err) {
       setError(err.message);
     }
