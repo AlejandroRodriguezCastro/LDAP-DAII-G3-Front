@@ -66,8 +66,13 @@ export const authService = {
   },
 
   getUser: () => {
-    const user = localStorage.getItem("user");
-    return user ? JSON.parse(user) : null;
+    // const user = localStorage.getItem("user");
+    const user = {
+      rol : "super",
+      organization : "Org Central"
+    }
+    // return user ? JSON.parse(user) : null;
+    return user;
   },
 };
 
