@@ -40,6 +40,7 @@ export const userServiceReal = {
   getUsers: async () => {
     const res = await api.get("/v1/user/all");
     console.log('Usuarios obtenidos:', res);
+    console.log('Usuarios obtenidos - data:', res.data);
 //     {
 //     "data": [
 //         {

@@ -12,7 +12,12 @@ const Admin = () => {
   const [filterOrg, setFilterOrg] = useState("");
 
   const navigate = useNavigate();
-  const currentUser = authService.getUser(); // 👈 leer usuario logueado
+  // const currentUser = authService.getUser(); // 👈 leer usuario logueado
+  const currentUser = {
+    role : "super",
+    organization : "Org Central"
+  }
+  console.log('Usuario actual:', currentUser);
 
   useEffect(() => {
     userServiceReal.getUsers().then(setUsers);
@@ -31,13 +36,13 @@ const Admin = () => {
 
   const handleUpdate = async (id, updatedData) => {
     const updated = await userServiceReal.updateUser(id, updatedData);
-    setUsers(users.map((u) => (u.id === id ? updated : u)));
+    setUsers(users.map((u) => (u.mail === id ? updated : u)));
     setEditingUser(null);
   };
 
   const handleDelete = async (id) => {
     await userServiceReal.deleteUser(id);
-    setUsers(users.filter((u) => u.id !== id));
+    setUsers(users.filter((u) => u.mail !== id));
   };
 
   const handleLogout = () => {
@@ -55,7 +60,7 @@ const Admin = () => {
     currentUser?.role === "super" && filterOrg
       ? users.filter((u) => u.organization === filterOrg)
       : users;
-
+  console.log('Usuarios filtrados:', filteredUsers);
   return (
     <div className="admin-container">
       <h1 className="admin-title">Administración de Usuarios</h1>
@@ -139,38 +144,38 @@ const Admin = () => {
         </thead>
         <tbody>
           {filteredUsers.map((u) => (
-            <tr key={u.id}>
+            <tr key={u.mail}>
               <td>
-                {editingUser?.id === u.id ? (
+                {editingUser?.id === u.mail ? (
                   <input
                     type="text"
-                    value={editingUser.name}
+                    value={editingUser.first_name + " " + editingUser.last_name}
                     onChange={(e) =>
-                      setEditingUser({ ...editingUser, name: e.target.value })
+                      setEditingUser({ ...editingUser, first_name: e.target.value.split(" ")[0], last_name: e.target.value.split(" ")[1] })
                     }
                   />
                 ) : (
-                  u.name
+                  u.first_name + " " + u.last_name
                 )}
               </td>
               <td>
-                {editingUser?.id === u.id ? (
+                {editingUser?.id === u.mail ? (
                   <input
                     type="email"
-                    value={editingUser.email}
+                    value={editingUser.mail}
                     onChange={(e) =>
-                      setEditingUser({ ...editingUser, email: e.target.value })
+                      setEditingUser({ ...editingUser, mail: e.target.value })
                     }
                   />
                 ) : (
-                  u.email
+                  u.mail
                 )}
               </td>
 
               {/* Columna org visible solo para super */}
               {currentUser?.role === "super" && (
                 <td>
-                  {editingUser?.id === u.id ? (
+                  {editingUser?.id === u.mail ? (
                     <input
                       type="text"
                       value={editingUser.organization}
@@ -185,7 +190,7 @@ const Admin = () => {
               )}
 
               <td>
-                {editingUser?.id === u.id ? (
+                {editingUser?.id === u.mail ? (
                   <select
                     value={editingUser.role}
                     onChange={(e) =>
@@ -201,10 +206,10 @@ const Admin = () => {
                 )}
               </td>
               <td className="user-actions">
-                {editingUser?.id === u.id ? (
+                {editingUser?.id === u.mail ? (
                   <button
                     className="btn-small btn-save"
-                    onClick={() => handleUpdate(u.id, editingUser)}
+                    onClick={() => handleUpdate(u.mail, editingUser)}
                   >
                     Guardar
                   </button>
@@ -218,7 +223,7 @@ const Admin = () => {
                 )}
                 <button
                   className="btn-small btn-delete"
-                  onClick={() => handleDelete(u.id)}
+                  onClick={() => handleDelete(u.mail)}
                 >
                   Eliminar
                 </button>
