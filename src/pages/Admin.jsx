@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { userService } from "../services/userService";
+import { userServiceReal } from "../services/userService";
 import { authService } from "../services/authService";
 import { Link } from "react-router-dom";
 import "./admin.css";
@@ -15,7 +15,7 @@ const Admin = () => {
   const currentUser = authService.getUser(); // 👈 leer usuario logueado
 
   useEffect(() => {
-    userService.getUsers().then(setUsers);
+    userServiceReal.getUsers().then(setUsers);
   }, []);
 
   const handleCreate = async (e) => {
@@ -24,19 +24,19 @@ const Admin = () => {
     if (!newUser.name || !newUser.email) return;
     if (currentUser?.role === "super" && !newUser.organization) return;
 
-    const created = await userService.createUser(newUser);
+    const created = await userServiceReal.createUser(newUser);
     setUsers([...users, created]);
     setNewUser({ name: "", email: "", role: "user", organization: "" });
   };
 
   const handleUpdate = async (id, updatedData) => {
-    const updated = await userService.updateUser(id, updatedData);
+    const updated = await userServiceReal.updateUser(id, updatedData);
     setUsers(users.map((u) => (u.id === id ? updated : u)));
     setEditingUser(null);
   };
 
   const handleDelete = async (id) => {
-    await userService.deleteUser(id);
+    await userServiceReal.deleteUser(id);
     setUsers(users.filter((u) => u.id !== id));
   };
 

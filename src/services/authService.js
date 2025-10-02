@@ -85,6 +85,52 @@ export const authServiceReal = {
 
       const token = res.data; // el backend devuelve un string JWT
       localStorage.setItem("authToken", token);
+      console.log("Response del login:", res);
+      console.log("Token guardado:", token);
+
+//       {
+//     "data": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhcm9kcmlndWV6IiwiYXVkIjoibGRhcC5jb20iLCJpc3MiOiJhdXRoX3NlcnZlciIsImV4cCI6MTc1OTQ1MzU0NywibmJmIjoxNzU5MzY3MTQ3LCJpYXQiOjE3NTkzNjcxNDcsImp0aSI6ImE2ZTlkYWZjLTZlNDAtNDFjNS04YmIzLWE2OWM0Y2Q0MTBmMiIsInJvbGVzIjpbXSwiYXpwIjoiYXJvZHJpZ3VleiIsImVtYWlsIjoiYWxlamFuZHJvQGdtYWlsLmNvbSIsInNjb3BlIjpbXSwidHlwIjoiYWNjZXNzIn0.be1lPJR1tOufQmUgs4Tz_yf1ZE7t4GOLQeAd5Oz0dUg",
+//     "status": 200,
+//     "statusText": "OK",
+//     "headers": {
+//         "content-length": "402",
+//         "content-type": "application/json"
+//     },
+//     "config": {
+//         "transitional": {
+//             "silentJSONParsing": true,
+//             "forcedJSONParsing": true,
+//             "clarifyTimeoutError": false
+//         },
+//         "adapter": [
+//             "xhr",
+//             "http",
+//             "fetch"
+//         ],
+//         "transformRequest": [
+//             null
+//         ],
+//         "transformResponse": [
+//             null
+//         ],
+//         "timeout": 0,
+//         "xsrfCookieName": "XSRF-TOKEN",
+//         "xsrfHeaderName": "X-XSRF-TOKEN",
+//         "maxContentLength": -1,
+//         "maxBodyLength": -1,
+//         "env": {},
+//         "headers": {
+//             "Accept": "application/json, text/plain, */*",
+//             "Content-Type": "application/json"
+//         },
+//         "baseURL": "http://localhost:8081",
+//         "method": "post",
+//         "url": "/v1/auth/token",
+//         "data": "{\"username\":\"alejandro@gmail.com\",\"password\":\"Asd123asd123as!\"}",
+//         "allowAbsoluteUrls": true
+//     },
+//     "request": {}
+// }
 
       // luego se puede validar el token para obtener info del user
       return { success: true, token };
