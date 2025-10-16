@@ -41,7 +41,6 @@ const Admin = () => {
   };
 
   const handleLogout = () => {
-    console.log('Cierre de sesión en proceso');
     authService.logout();
     navigate("/");
   };
