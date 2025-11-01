@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { userService } from "../services/userService";
 import { authService } from "../services/authService";
 import { Link } from "react-router-dom";
 import "./admin.css";
+import ModalContext from "../components/context/ModalContext.jsx";
+import UserFormModalContent from "../components/UserFormModalContent.jsx";
 
 const Admin = () => {
   const [users, setUsers] = useState([]);
-  const [newUser, setNewUser] = useState({ name: "", email: "", role: "user", organization: "" });
   const [editingUser, setEditingUser] = useState(null);
   const [filterOrg, setFilterOrg] = useState("");
 
@@ -18,26 +19,61 @@ const Admin = () => {
     userService.getUsers().then(setUsers);
   }, []);
 
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    // validación: solo super admin requiere organización
-    if (!newUser.name || !newUser.email) return;
-    if (currentUser?.role === "super" && !newUser.organization) return;
 
-    const created = await userService.createUser(newUser);
-    setUsers([...users, created]);
-    setNewUser({ name: "", email: "", role: "user", organization: "" });
+  const handleCreate = () => {
+    let tempUser = { name: "", email: "", role: "user", organization: "" };
+    showModal(
+      () => (
+        <UserFormModalContent
+          user={tempUser}
+          onChange={(u) => { tempUser = u; }}
+          organizations={organizations}
+        />
+      ),
+      async () => {
+        // validación: solo super admin requiere organización
+        if (!tempUser.name || !tempUser.email) return;
+        if (currentUser?.role === "super" && !tempUser.organization) return;
+        const created = await userService.createUser(tempUser);
+        setUsers([...users, created]);
+      },
+      { acceptText: "Crear", cancelText: "Cancelar" }
+    );
   };
 
-  const handleUpdate = async (id, updatedData) => {
-    const updated = await userService.updateUser(id, updatedData);
-    setUsers(users.map((u) => (u.id === id ? updated : u)));
-    setEditingUser(null);
+
+  const handleEdit = (user) => {
+    let tempUser = { ...user };
+    showModal(
+      () => (
+        <UserFormModalContent
+          user={tempUser}
+          onChange={(u) => { tempUser = u; }}
+          organizations={organizations}
+        />
+      ),
+      async () => {
+        const updated = await userService.updateUser(user.id, tempUser);
+        setUsers(users.map((u) => (u.id === user.id ? updated : u)));
+      },
+      { acceptText: "Guardar", cancelText: "Cancelar" }
+    );
   };
 
-  const handleDelete = async (id) => {
-    await userService.deleteUser(id);
-    setUsers(users.filter((u) => u.id !== id));
+
+  const { showModal } = useContext(ModalContext);
+
+  const confirmDelete = (id) => {
+    showModal(
+      <div>
+        <h3>¿Seguro que deseas eliminar este usuario?</h3>
+      </div>,
+      async () => {
+        await userService.deleteUser(id);
+        setUsers(users.filter((u) => u.id !== id));
+      },
+      { acceptText: "Eliminar", cancelText: "Cancelar" }
+    );
   };
 
   const handleLogout = () => {
@@ -81,42 +117,9 @@ const Admin = () => {
       )}
 
       {/* Alta usuario */}
-      <form className="form-inline" onSubmit={handleCreate}>
-        <input
-          type="text"
-          placeholder="Nombre"
-          value={newUser.name}
-          onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={newUser.email}
-          onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-        />
-
-        {/* Campo organización visible solo para super */}
-        {currentUser?.role === "super" && (
-          <input
-            type="text"
-            placeholder="Organización"
-            value={newUser.organization}
-            onChange={(e) => setNewUser({ ...newUser, organization: e.target.value })}
-          />
-        )}
-
-        <select
-          value={newUser.role}
-          onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
-        >
-          <option value="user">Usuario</option>
-          <option value="admin">Administrador</option>
-          <option value="super">Super Usuario</option>
-        </select>
-        <button className="btn-small btn-save" type="submit">
-          Crear
-        </button>
-      </form>
+      <button className="btn-small btn-save" style={{ marginBottom: "1rem" }} onClick={handleCreate}>
+        Crear usuario
+      </button>
 
       {currentUser?.role === "super" && (
         <div style={{ marginBottom: "1rem" }}>
@@ -201,24 +204,15 @@ const Admin = () => {
                 )}
               </td>
               <td className="user-actions">
-                {editingUser?.id === u.id ? (
-                  <button
-                    className="btn-small btn-save"
-                    onClick={() => handleUpdate(u.id, editingUser)}
-                  >
-                    Guardar
-                  </button>
-                ) : (
-                  <button
-                    className="btn-small btn-edit"
-                    onClick={() => setEditingUser(u)}
-                  >
-                    Editar
-                  </button>
-                )}
+                <button
+                  className="btn-small btn-edit"
+                  onClick={() => handleEdit(u)}
+                >
+                  Editar
+                </button>
                 <button
                   className="btn-small btn-delete"
-                  onClick={() => handleDelete(u.id)}
+                  onClick={() => confirmDelete(u.id)}
                 >
                   Eliminar
                 </button>
