@@ -6,8 +6,8 @@ import { Link, useNavigate } from "react-router-dom";
 import FormInput from "../components/FormInput.jsx";
 import Button from "../components/Button.jsx";
 import AuthLayout from "../components/AuthLayout.jsx";
-import { authService } from "../services/authService.js";
 import "./auth.css";
+import { authService } from "../services/authService.js";
 
 const schema = yup.object({
   email: yup
@@ -31,16 +31,19 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     try {
-      const { user } = await authService.login(data);
-
-      // 🔑 Redirección según rol
-      if (user.role === "admin" || user.role === "super") {
+      setError(''); // Limpiar error previo
+      const { user: decodedJWT } = await authService.login(data);
+      
+      // 🔑 Redirección según roles del JWT
+      if (decodedJWT.roles && (decodedJWT.roles.includes("super_admin_write") || decodedJWT.roles.includes("super_admin_read"))) {
+        console.log('Redirigiendo a admin...');
         navigate("/admin");
       } else {
+        console.log('Redirigiendo a home...');
         navigate("/home");
       }
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Error al iniciar sesión. Por favor, verifica tus credenciales.');
     }
   };
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { userService } from "../services/userService";
-import { authService } from "../services/authService";
+import { authService } from "../services/authService.js";
 import { Link } from "react-router-dom";
 import "./admin.css";
 
