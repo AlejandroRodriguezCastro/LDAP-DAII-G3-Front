@@ -1,43 +1,75 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { userService } from "../services/userService";
-import { authService } from "../services/authService.js";
+import { roleService } from "../services/roleService";
+import { authService } from "../services/authService";
 import { Link } from "react-router-dom";
 import "./admin.css";
 
 const Admin = () => {
   const [users, setUsers] = useState([]);
-  const [newUser, setNewUser] = useState({ name: "", email: "", role: "user", organization: "" });
+  const [roleOptions, setRoleOptions] = useState([]);
+  const [newUser, setNewUser] = useState({ 
+    first_name: "", 
+    last_name: "", 
+    mail: "", 
+    roles: [{ name: "user" }],
+    organization: "",
+    is_active: true 
+  });
   const [editingUser, setEditingUser] = useState(null);
   const [filterOrg, setFilterOrg] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
   const currentUser = authService.getUser(); // 👈 leer usuario logueado
 
   useEffect(() => {
-    userService.getUsers().then(setUsers);
+    // Se hace fetch de data en una transacción
+    const loadData = async () => {
+      try {
+        const [usersData, rolesData] = await Promise.all([
+          userService.getUsers(),
+          roleService.getRoles()
+        ]);
+        setUsers(usersData);
+        setRoleOptions(rolesData.roles);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
+    };
+    loadData();
   }, []);
 
   const handleCreate = async (e) => {
     e.preventDefault();
     // validación: solo super admin requiere organización
-    if (!newUser.name || !newUser.email) return;
-    if (currentUser?.role === "super" && !newUser.organization) return;
+    if (!newUser.first_name || !newUser.mail) return;
+    if (currentUser?.roles?.[0]?.name === "super" && !newUser.organization) return;
 
+    console.log(newUser)
     const created = await userService.createUser(newUser);
     setUsers([...users, created]);
-    setNewUser({ name: "", email: "", role: "user", organization: "" });
+    setNewUser({ 
+      first_name: "", 
+      last_name: "", 
+      mail: "", 
+      roles: [{ name: "user" }],
+      organization: "",
+      is_active: true 
+    });
   };
 
-  const handleUpdate = async (id, updatedData) => {
-    const updated = await userService.updateUser(id, updatedData);
-    setUsers(users.map((u) => (u.id === id ? updated : u)));
+  const handleUpdate = async (mail, updatedData) => {
+    const updated = await userService.updateUser(mail, updatedData);
+    setUsers(users.map((u) => (u.mail === mail ? updated : u)));
     setEditingUser(null);
   };
 
-  const handleDelete = async (id) => {
-    await userService.deleteUser(id);
-    setUsers(users.filter((u) => u.id !== id));
+  const handleDelete = async (mail) => {
+    await userService.deleteUser(mail);
+    setUsers(users.filter((u) => u.mail !== mail));
   };
 
   const handleLogout = () => {
@@ -46,7 +78,7 @@ const Admin = () => {
   };
 
   // Solo si es super mostramos filtro por organización
-  const organizations = currentUser?.role === "super" 
+  const organizations = currentUser?.roles?.[0]?.name === "super" 
     ? [...new Set(users.map((u) => u.organization))] 
     : [];
 
@@ -54,6 +86,7 @@ const Admin = () => {
     currentUser?.role === "super" && filterOrg
       ? users.filter((u) => u.organization === filterOrg)
       : users;
+
 
   return (
     <div className="admin-container">
@@ -66,7 +99,7 @@ const Admin = () => {
       </div>
 
       {/* Filtro solo visible para super */}
-      {currentUser?.role === "super" && (
+      {currentUser?.roles?.[0]?.name === "super" && (
         <div className="filter-bar">
           <select value={filterOrg} onChange={(e) => setFilterOrg(e.target.value)}>
             <option value="">Todas las organizaciones</option>
@@ -84,14 +117,20 @@ const Admin = () => {
         <input
           type="text"
           placeholder="Nombre"
-          value={newUser.name}
-          onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+          value={newUser.first_name}
+          onChange={(e) => setNewUser({ ...newUser, first_name: e.target.value })}
+        />
+        <input
+          type="text"
+          placeholder="Apellido"
+          value={newUser.last_name}
+          onChange={(e) => setNewUser({ ...newUser, last_name: e.target.value })}
         />
         <input
           type="email"
           placeholder="Email"
-          value={newUser.email}
-          onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+          value={newUser.mail}
+          onChange={(e) => setNewUser({ ...newUser, mail: e.target.value })}
         />
 
         {/* Campo organización visible solo para super */}
@@ -105,13 +144,20 @@ const Admin = () => {
         )}
 
         <select
-          value={newUser.role}
-          onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+          value={newUser.roles[0].name}
+          onChange={(e) => {setNewUser({ ...newUser, roles: [{ ...newUser.roles[0], name: e.target.value }] })}}
         >
-          <option value="user">Usuario</option>
-          <option value="admin">Administrador</option>
-          <option value="super">Super Usuario</option>
+          {!loading 
+            ? roleOptions.map(rol => (
+                <option key={rol.name} value={rol.name}>
+                  {rol.name}
+                </option>
+              ))
+            : <option value="loading">Cargando roles...</option>}
         </select>
+
+
+
         <button className="btn-small btn-save" type="submit">
           Crear
         </button>
@@ -137,39 +183,48 @@ const Admin = () => {
           </tr>
         </thead>
         <tbody>
-          {filteredUsers.map((u) => (
-            <tr key={u.id}>
+          {filteredUsers.map((user) => (
+            <tr key={`${user.mail}_${user.first_name}_${user.organization || ''}`}>
               <td>
-                {editingUser?.id === u.id ? (
-                  <input
-                    type="text"
-                    value={editingUser.name}
-                    onChange={(e) =>
-                      setEditingUser({ ...editingUser, name: e.target.value })
-                    }
-                  />
+                {editingUser?.id === user.id ? (
+                  <>
+                    <input
+                      type="text"
+                      value={editingUser.first_name}
+                      onChange={(e) =>
+                        setEditingUser({ ...editingUser, first_name: e.target.value })
+                      }
+                    />
+                    <input
+                      type="text"
+                      value={editingUser.last_name}
+                      onChange={(e) =>
+                        setEditingUser({ ...editingUser, last_name: e.target.value })
+                      }
+                    />
+                  </>
                 ) : (
-                  u.name
+                  `${user.first_name} ${user.last_name}`
                 )}
               </td>
               <td>
-                {editingUser?.id === u.id ? (
+                {editingUser?.id === user.id ? (
                   <input
                     type="email"
-                    value={editingUser.email}
+                    value={editingUser.mail}
                     onChange={(e) =>
-                      setEditingUser({ ...editingUser, email: e.target.value })
+                      setEditingUser({ ...editingUser, mail: e.target.value })
                     }
                   />
                 ) : (
-                  u.email
+                  user.mail
                 )}
               </td>
 
               {/* Columna org visible solo para super */}
               {currentUser?.role === "super" && (
                 <td>
-                  {editingUser?.id === u.id ? (
+                  {editingUser?.id === user.id ? (
                     <input
                       type="text"
                       value={editingUser.organization}
@@ -178,46 +233,55 @@ const Admin = () => {
                       }
                     />
                   ) : (
-                    u.organization
+                    user.organization
                   )}
                 </td>
               )}
 
               <td>
-                {editingUser?.id === u.id ? (
+                {editingUser?.id === user.id ? (
                   <select
-                    value={editingUser.role}
+                    value={editingUser.roles[0].name}
                     onChange={(e) =>
-                      setEditingUser({ ...editingUser, role: e.target.value })
+                      setEditingUser({ 
+                        ...editingUser, 
+                        roles: [{ ...editingUser.roles[0], name: e.target.value }]
+                      })
                     }
                   >
-                    <option value="user">Usuario</option>
-                    <option value="admin">Administrador</option>
-                    <option value="super">Super Usuario</option>
+                    {roleOptions.length > 0
+                      ? roleOptions.map(rol => (
+                          <option key={rol.name} value={rol.name}>
+                            {rol.name}
+                          </option>
+                        ))
+                      : <option value="user">Usuario</option>}
                   </select>
                 ) : (
-                  u.role
+                  user.roles.length > 0 ? (
+                    user.roles[0].name
+                  ) : 'No role'
                 )}
               </td>
               <td className="user-actions">
-                {editingUser?.id === u.id ? (
+                {editingUser?.id === user.id ? (
                   <button
                     className="btn-small btn-save"
-                    onClick={() => handleUpdate(u.id, editingUser)}
+                    onClick={() => handleUpdate(user.id, editingUser)}
                   >
                     Guardar
                   </button>
                 ) : (
                   <button
                     className="btn-small btn-edit"
-                    onClick={() => setEditingUser(u)}
+                    onClick={() => setEditingUser(user)}
                   >
                     Editar
                   </button>
                 )}
                 <button
                   className="btn-small btn-delete"
-                  onClick={() => handleDelete(u.id)}
+                  onClick={() => handleDelete(user.email)}
                 >
                   Eliminar
                 </button>
