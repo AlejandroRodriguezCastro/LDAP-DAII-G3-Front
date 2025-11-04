@@ -1,41 +1,42 @@
 // services/authService.js
+import { jwtDecode } from 'jwt-decode';
+import { API_URL } from '../config/api';
 
 export const authService = {
-  login: async ({ email, password }) => {
-    // Super Admin
-    if (email === "super@citypass.com" && password === "12345678") {
-      const token = "fake-super-token";
-      const user = { email, role: "super" };
+  login: async ({ email, password } ) => {
+    try {
+      const response = await fetch(`${API_URL}/v1/auth/token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          username: email, 
+          redirect_uris: ["http://localhost/callback"],
+          password 
+        })
+      });
 
-      localStorage.setItem("authToken", token);
-      localStorage.setItem("user", JSON.stringify(user));
+      const token = await response.json();
+      let decodedJWT = null;
 
-      return { success: true, token, user };
+      if (token) {
+        decodedJWT = jwtDecode(token);
+
+        // Guardamos el token y la info del usuario (todo el JWT decodificado)
+        localStorage.setItem("authToken", token);
+        localStorage.setItem("user", JSON.stringify(decodedJWT));
+      }
+
+      if (!response.ok) {
+        throw new Error('Error al iniciar sesión');
+      }
+
+      return { success: true, token, user: decodedJWT };
+    } catch (error) {
+      console.error('Error en login:', error);
+      throw error;
     }
-
-    // Admin normal
-    if (email === "admin@citypass.com" && password === "12345678") {
-      const token = "fake-admin-token";
-      const user = { email, role: "admin" };
-
-      localStorage.setItem("authToken", token);
-      localStorage.setItem("user", JSON.stringify(user));
-
-      return { success: true, token, user };
-    }
-
-    // Usuario común
-    if (email === "test@citypass.com" && password === "12345678") {
-      const token = "fake-user-token";
-      const user = { email, role: "user" };
-
-      localStorage.setItem("authToken", token);
-      localStorage.setItem("user", JSON.stringify(user));
-
-      return { success: true, token, user };
-    }
-
-    throw new Error("Credenciales inválidas");
   },
 
   register: async ({ email, password, name }) => {
@@ -49,10 +50,12 @@ export const authService = {
     localStorage.setItem("authToken", token);
     localStorage.setItem("user", JSON.stringify(user));
 
+    console.log('No implementado', password)
     return { success: true, token, user };
   },
 
   recoverPassword: async (email) => {
+    console.log('No implementado', email)
     return { success: true };
   },
 
