@@ -10,6 +10,7 @@ const Admin = () => {
   const [newUser, setNewUser] = useState({ name: "", email: "", role: "user", organization: "" });
   const [editingUser, setEditingUser] = useState(null);
   const [filterOrg, setFilterOrg] = useState("");
+  let token = localStorage.getItem("authToken");
 
   const navigate = useNavigate();
   const currentUser = authService.getUser(); // 👈 leer usuario logueado
@@ -58,7 +59,10 @@ const Admin = () => {
   return (
     <div className="admin-container">
       <h1 className="admin-title">Administración de Usuarios</h1>
-
+      <button onClick={() => {
+        const response = authService.validateToken(token)
+        console.log('Respuesta validacion', response)
+      }}>TEST</button>
       <div style={{ textAlign: "right", marginBottom: "1rem" }}>
         <button className="btn-small btn-delete" onClick={handleLogout}>
           Cerrar sesión

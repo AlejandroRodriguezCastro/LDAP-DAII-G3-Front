@@ -39,6 +39,25 @@ export const authService = {
     }
   },
 
+  validateToken: async (token) => {
+    try {
+      const response = await fetch(`${API_URL}/v1/auth/validate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ jwt_token: token })
+      });
+      if (!response.ok) {
+        throw new Error('Token inválido');
+      }
+      return { success: true };
+    } catch (error) {
+      console.error('Error en validateToken:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
   register: async ({ email, password, name }) => {
     if (email === "test@citypass.com") {
       throw new Error("El email ya está registrado");
