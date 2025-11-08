@@ -4,6 +4,8 @@ import { authService } from "../services/authService.js";
 import UsuariosTab from "../components/admin/UsuariosTab";
 import RolesTab from "../components/admin/RolesTab";
 import "./admin.css";
+import ModalContext from "../components/context/ModalContext.jsx";
+import UserFormModalContent from "../components/UserFormModalContent.jsx";
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState("usuarios");
