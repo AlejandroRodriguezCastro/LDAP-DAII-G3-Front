@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "../pages/Login";
+import CallbackLogin from "../pages/CallbackLogin";
 import Register from "../pages/Register";
 import ForgotPassword from "../pages/ForgotPassword";
 import Admin from "../pages/Admin";
@@ -10,6 +11,7 @@ const AppRouter = () => (
   <BrowserRouter>
     <Routes>
       <Route path="/" element={<Login />} />
+      <Route path="/auth" element={<CallbackLogin />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
 

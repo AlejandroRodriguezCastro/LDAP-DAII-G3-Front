@@ -1,26 +1,30 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import FormInput from "../components/FormInput.jsx";
 import Button from "../components/Button.jsx";
 import AuthLayout from "../components/AuthLayout.jsx";
-import "./auth.css";
 import { authService } from "../services/authService.js";
+import "./auth.css";
 
 const schema = yup.object({
-  email: yup
-    .string()
-    .email("Email inválido")
-    .required("El email es obligatorio"),
+  email: yup.string().email("Email inválido").required("El email es obligatorio"),
   password: yup.string().required("La contraseña es obligatoria"),
 });
 
-const Login = () => {
-  console.log('Pantalla de Login default - No redirect')
+const CallbackLogin = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectUrl = searchParams.get("redirectUrl");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (redirectUrl) {
+      console.log(`Login con callback: retornará el token a ${redirectUrl}`);
+    }
+  }, [redirectUrl]);
 
   const {
     register,
@@ -32,26 +36,36 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     try {
-      setError(''); // Limpiar error previo
-      const { user: decodedJWT } = await authService.login(data);
-      
-      // 🔑 Redirección según roles del JWT
-      if (decodedJWT.roles && (decodedJWT.roles.includes("super_admin_write") || decodedJWT.roles.includes("super_admin_read"))) {
-        console.log('Redirigiendo a admin...');
+      setError("");
+      const { token, user } = await authService.login(data);
+
+      // Token se guarda localmente
+      localStorage.setItem("authToken", token);
+
+      if (redirectUrl && window.opener) {
+        // Devuelve token a la aplicación externa
+        window.opener.postMessage({ token }, redirectUrl);
+
+        alert("Inicio de sesión exitoso. Puedes volver a tu aplicación.");
+        window.close();
+        return;
+      }
+
+      // Si no hay redirectUrl, se acude al flujo normal
+      if (user?.roles?.some(r => r.startsWith("super_admin"))) {
         navigate("/admin");
       } else {
-        console.log('Redirigiendo a home...');
         navigate("/home");
       }
+
     } catch (err) {
-      setError(err.message || 'Error al iniciar sesión. Por favor, verifica tus credenciales.');
+      setError(err.message || "Error al iniciar sesión. Verifica tus credenciales.");
     }
   };
 
   return (
     <AuthLayout title="Iniciar sesión">
       <form onSubmit={handleSubmit(onSubmit)}>
-        {/* Input Email */}
         <FormInput
           id="email"
           label="Email"
@@ -59,8 +73,6 @@ const Login = () => {
           register={register("email")}
           error={errors.email}
         />
-
-        {/* Input Password */}
         <FormInput
           id="password"
           label="Contraseña"
@@ -68,21 +80,12 @@ const Login = () => {
           register={register("password")}
           error={errors.password}
         />
-
-        {/* Error global */}
-        {error && (
-          <p className="error-text" role="alert">
-            {error}
-          </p>
-        )}
-
-        {/* Botón */}
+        {error && <p className="error-text" role="alert">{error}</p>}
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Ingresando..." : "Iniciar sesión"}
         </Button>
       </form>
 
-      {/* Links extra */}
       <div className="auth-links">
         <Link to="/forgot-password">¿Olvidaste tu contraseña?</Link>
         <Link to="/register">Crear cuenta</Link>
@@ -91,4 +94,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default CallbackLogin;

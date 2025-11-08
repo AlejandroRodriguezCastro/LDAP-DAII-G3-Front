@@ -67,7 +67,7 @@ describe("Login Page", () => {
     fireEvent.click(screen.getByRole("button", { name: /iniciar sesión/i }));
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/admin");
+      expect(mockNavigate).toHaveBeenCalledWith("/home");
     });
   });
 
@@ -85,7 +85,7 @@ describe("Login Page", () => {
     fireEvent.click(screen.getByRole("button", { name: /iniciar sesión/i }));
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/admin");
+      expect(mockNavigate).toHaveBeenCalledWith("/home");
     });
   });
 
