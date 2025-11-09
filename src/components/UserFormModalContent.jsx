@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 
-const UserFormModalContent = ({ user, onChange, organizations = [] }) => {
+const UserFormModalContent = ({ title, user, onChange, organizations = [], roleOptions = [] }) => {
   const [form, setForm] = useState(user);
+  console.log(user)
 
   useEffect(() => {
     setForm(user);
@@ -9,27 +10,42 @@ const UserFormModalContent = ({ user, onChange, organizations = [] }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === "role") {
+      setForm((prev) => ({ ...prev, roles: [{...prev.roles[0], name: value}]})) 
+    }
     setForm((prev) => ({ ...prev, [name]: value }));
     if (onChange) onChange({ ...form, [name]: value });
   };
 
   return (
     <form className="form-inline" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      {
+        title && <h3>{title}</h3>
+      }
       <input
-        name="name"
+        name="first_name"
         type="text"
         placeholder="Nombre"
-        value={form.name}
+        value={form.first_name}
         onChange={handleChange}
       />
+
       <input
-        name="email"
+        name="last_name"
+        type="text"
+        placeholder="Apellido"
+        value={form.last_name}
+        onChange={handleChange}
+      />
+      
+      <input
+        name="mail"
         type="email"
         placeholder="Email"
-        value={form.email}
+        value={form.mail}
         onChange={handleChange}
       />
-      {form.role === "super" && (
+      {/* {form.role === "super" && (
         organizations.length > 0 ? (
           <select
             name="organization"
@@ -50,11 +66,16 @@ const UserFormModalContent = ({ user, onChange, organizations = [] }) => {
             onChange={handleChange}
           />
         )
-      )}
-      <select name="role" value={form.role} onChange={handleChange}>
-        <option value="user">Usuario</option>
-        <option value="admin">Administrador</option>
-        <option value="super">Super Usuario</option>
+      )} */}
+      <select name="role" value={form.roles[0].name} onChange={handleChange}>
+        <option value="">Seleccione una opcion</option>
+        {
+          roleOptions.map(rol => (
+            <option key={rol.name} value={rol.name}>
+              {rol.name}
+            </option>
+          ))
+        }
       </select>
     </form>
   );

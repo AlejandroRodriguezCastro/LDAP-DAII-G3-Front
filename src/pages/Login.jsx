@@ -18,7 +18,6 @@ const schema = yup.object({
 });
 
 const Login = () => {
-  console.log('Pantalla de Login default - No redirect')
   const navigate = useNavigate();
   const [error, setError] = useState("");
 

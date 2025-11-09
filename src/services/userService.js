@@ -44,11 +44,12 @@ export const userService = {
 
   createUser: async (user) => {
     try {
+      console.log('User que recubi', user)
       const token = localStorage.getItem('authToken');
+      // console.log(localStorage.getItem('userData'))
       // Mockeo los datos faltantes si no están presentes
       const currentUser = JSON.parse(localStorage.getItem('userData')) || {};
-      console.log('CU', currentUser)
-      const organization = user.organization || currentUser.organization || "Emergencias";
+      const organization = user.organization || currentUser.organization || "admin";
       const telephone_number = user.telephone_number || "000-000-0000";
       const password = user.password || `${user.first_name || "user"}${user.last_name || "pass"}123!`;
       // roles ya viene del selector

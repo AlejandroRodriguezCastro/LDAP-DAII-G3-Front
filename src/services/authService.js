@@ -1,7 +1,6 @@
 // services/authService.js
 import { jwtDecode } from 'jwt-decode';
 import { API_URL } from '../config/api';
-import { userService } from './userService';
 
 export const authService = {
   login: async ({ email, password } ) => {
@@ -19,6 +18,7 @@ export const authService = {
       });
 
       const token = await response.json();
+      console.log('token', token)
       let decodedJWT = null;
 
       if (token) {
