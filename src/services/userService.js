@@ -1,6 +1,3 @@
-// services/userService.js
-
-
 import { API_URL } from '../config/api';
 
 export const userService = {
@@ -42,6 +39,24 @@ export const userService = {
     }
   },
 
+  getUsersByOrganization: async (organization) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`${API_URL}/v1/user/by-organization/${organization}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) throw new Error('Error al obtener usuarios');
+      return await response.json();
+    } catch (error) {
+      console.error('Error getUsers:', error);
+      throw error;
+    }
+  },
+
   createUser: async (user) => {
     try {
       const token = localStorage.getItem('authToken');
@@ -65,7 +80,6 @@ export const userService = {
         },
         body: JSON.stringify(userToSend),
       });
-      if (!response.ok) throw new Error('Error al crear usuario');
       return await response.json();
     } catch (error) {
       console.error('Error createUser:', error);

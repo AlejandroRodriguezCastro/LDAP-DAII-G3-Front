@@ -32,16 +32,16 @@ const Login = () => {
   const onSubmit = async (data) => {
     try {
       setError(''); // Limpiar error previo
-      const { user: decodedJWT } = await authService.login(data);
+      // const { user: decodedJWT } = await authService.login(data);
       
       // 🔑 Redirección según roles del JWT
-      if (decodedJWT.roles && (decodedJWT.roles.includes("super_admin_write") || decodedJWT.roles.includes("super_admin_read"))) {
+      // if (decodedJWT.roles && (decodedJWT.roles.includes("super_admin_write") || decodedJWT.roles.includes("super_admin_read"))) {
         console.log('Redirigiendo a admin...');
         navigate("/admin");
-      } else {
-        console.log('Redirigiendo a home...');
-        navigate("/home");
-      }
+      // } else {
+      //   console.log('Redirigiendo a home...');
+      //   navigate("/home");
+      // }
     } catch (err) {
       setError(err.message || 'Error al iniciar sesión. Por favor, verifica tus credenciales.');
     }

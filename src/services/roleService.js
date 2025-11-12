@@ -26,6 +26,25 @@ export const roleService = {
     }
   },
 
+  getRolesByOrganization: async (organization) => {
+      try {
+        const token = localStorage.getItem('authToken');
+        const response = await fetch(`${API_URL}/roles/organization/${organization}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        if (!response.ok) throw new Error('Error al obtener roles');
+        return await response.json();
+      } catch (error) {
+        console.error('Error getRoles:', error);
+        throw error;
+      }
+    },
+
+
   /**
    * Crea un nuevo rol
    * @param {Object} roleData - Datos del rol
