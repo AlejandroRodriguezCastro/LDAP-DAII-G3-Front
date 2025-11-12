@@ -1,11 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { authService } from "../services/authService.js";
-import UsuariosTab from "../components/admin/UsuariosTab";
 import RolesTab from "../components/admin/RolesTab";
+import UsersTab from "../components/admin/UsersTab.jsx";
+import { authService } from "../services/authService.js";
 import "./admin.css";
-import ModalContext from "../components/context/ModalContext.jsx";
-import UserFormModalContent from "../components/UserFormModalContent.jsx";
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState("usuarios");
@@ -45,7 +43,7 @@ const Admin = () => {
 
       {/* Tabs Content */}
       <div className="tabs-content">
-        {activeTab === "usuarios" && <UsuariosTab currentUser={currentUser} />}
+        {activeTab === "usuarios" && <UsersTab currentUser={currentUser} />}
         {activeTab === "roles" && <RolesTab currentUser={currentUser} />}
       </div>
     </div>

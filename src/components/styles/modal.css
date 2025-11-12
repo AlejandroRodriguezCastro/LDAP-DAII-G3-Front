@@ -9,12 +9,21 @@
 }
 .modal-content {
   background: #fff;
-  padding: 2rem;
+  padding: 2.5rem;
   border-radius: 8px;
-  min-width: 300px;
-  max-width: 90vw;
+  width: 450px;
   box-shadow: 0 2px 16px rgba(0,0,0,0.2);
 }
+
+.modal-content h3 {
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.158);
+}
+
+.modal-content input, .modal-content select, .modal-content option {
+  padding: 0.75rem;
+}
+
 .modal-body {
   margin-bottom: 1.5rem;
 }
@@ -32,6 +41,74 @@
   cursor: pointer;
   font-size: 1rem;
 }
+
+.modal-btn-cancel{
+  background: #9ca3af;
+}
+
 .modal-btn:hover {
   background: #0056b3;
+}
+
+.modal-btn-cancel:hover {
+  background: #8a919c;
+}
+
+.option-selected {
+  background: rgb(186, 231, 210);
+}
+
+.roles-container {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.roles-items {
+  margin-top: 10px;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.role-item {
+  background: rgb(170, 247, 170);
+  padding: 5px 15px;
+  margin: 0;
+  border-radius: 15px;
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  height: fit-content;
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: 600;
+  position: relative;
+  transition: .5s;
+}
+
+.roles-items .role-item:hover {
+  cursor: pointer;
+  background: rgb(255, 171, 171);
+}
+
+.empty-roles {
+  background: rgb(253, 192, 192);
+  text-align: center;
+  padding: 5px 15px;
+  border-radius: 15px;
+  width: 100%;
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.delete-modal h3{
+  padding: 25px 0;
+  text-align: center;
+}
+
+.delete-modal h3 span {
+  color: #0056b3;
 }

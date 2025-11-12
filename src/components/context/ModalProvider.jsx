@@ -3,15 +3,15 @@ import ModalContext from "./ModalContext.jsx";
 import Modal from "../Modal.jsx";
 
 const ModalProvider = ({ children }) => {
-  const [modalProps, setModalProps] = useState(null);
+  const [modalProps, setModalProps] = useState(null)
 
-  const showModal = useCallback((content, onAccept, options = {}) => {
-    setModalProps({ content, onAccept, ...options });
-  }, []);
+  const showModal = useCallback((props) => {
+    setModalProps(props);
+  }, [])
 
   const hideModal = useCallback(() => {
     setModalProps(null);
-  }, []);
+  }, [])
 
   return (
     <ModalContext.Provider value={{ showModal, hideModal, modalProps }}>
@@ -20,7 +20,7 @@ const ModalProvider = ({ children }) => {
         <Modal {...modalProps} onClose={hideModal} />
       )}
     </ModalContext.Provider>
-  );
-};
+  )
+}
 
-export default ModalProvider;
+export default ModalProvider

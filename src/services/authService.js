@@ -19,16 +19,17 @@ export const authService = {
       });
 
       const token = await response.json();
+      console.log('token', token)
       let decodedJWT = null;
 
       if (token) {
         decodedJWT = jwtDecode(token);
-        // const userData = await userService.getUser(decodedJWT.email);
+        const userData = await userService.getUser(decodedJWT.email);
 
         // Guardamos el token y la info del usuario (todo el JWT decodificado)
         localStorage.setItem("authToken", token);
         localStorage.setItem("user", JSON.stringify(decodedJWT));
-        // localStorage.setItem("userData", JSON.stringify(userData));
+        localStorage.setItem("userData", JSON.stringify(userData));
       }
 
       if (!response.ok) {
