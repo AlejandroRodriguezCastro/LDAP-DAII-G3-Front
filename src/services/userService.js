@@ -8,7 +8,7 @@ export const userService = {
   getUser: async (mail) => {
   try {
     const token = localStorage.getItem('authToken');
-    const response = await fetch(`${API_URL}/v1/user/get-user/?username=${encodeURIComponent(mail)}`, {
+    const response = await fetch(`${API_URL}/v1/user/get-user/?user_mail=${encodeURIComponent(mail)}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -44,18 +44,14 @@ export const userService = {
 
   createUser: async (user) => {
     try {
-      console.log('User que recubi', user)
       const token = localStorage.getItem('authToken');
-      // console.log(localStorage.getItem('userData'))
-      // Mockeo los datos faltantes si no están presentes
       const currentUser = JSON.parse(localStorage.getItem('userData')) || {};
       const organization = user.organization || currentUser.organization || "admin";
       const telephone_number = user.telephone_number || "000-000-0000";
       const password = user.password || `${user.first_name || "user"}${user.last_name || "pass"}123!`;
-      // roles ya viene del selector
       const userToSend = {
         ...user,
-        roles: [{ ...user.roles[0], organization: organization }],
+        roles: user.roles,
         organization,
         telephone_number,
         password
@@ -65,6 +61,7 @@ export const userService = {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
+          'X-Request-Name': 'createUser',
         },
         body: JSON.stringify(userToSend),
       });
@@ -76,16 +73,17 @@ export const userService = {
     }
   },
 
-  updateUser: async (mail, updatedData) => {
+  updateUser: async (user) => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`${API_URL}/v1/user/${mail}`, {
+      const response = await fetch(`${API_URL}/v1/user/${user.mail}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
+          'X-Request-Name': 'updateUser',
         },
-        body: JSON.stringify(updatedData),
+        body: JSON.stringify(user),
       });
       if (!response.ok) throw new Error('Error al actualizar usuario');
       return await response.json();
@@ -98,11 +96,12 @@ export const userService = {
   deleteUser: async (mail) => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`${API_URL}/v1/users/${mail}`, {
+      const response = await fetch(`${API_URL}/v1/user/${mail}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
+          'X-Request-Name': 'deleteUser',
         },
       });
       if (!response.ok) throw new Error('Error al eliminar usuario');

@@ -10,7 +10,9 @@ const UsersTab = ({ currentUser }) => {
 
   const [users, setUsers] = useState([]);
   const [roleOptions, setRoleOptions] = useState([]);
-  const [newUser, setNewUser] = useState({ first_name: "", last_name: "", mail: "", roles: [{ name: ""}], organization: "", is_active: true });
+  const [newUser, setNewUser] = useState({ first_name: "", last_name: "", mail: "", roles: null, organization: "", is_active: true });
+  const { showModal } = useContext(ModalContext);
+  const organizations = ['admin', 'Emergencias']
 
   useEffect(() => {
     // Se hace fetch de data en una transacción
@@ -29,24 +31,21 @@ const UsersTab = ({ currentUser }) => {
     loadData();
   }, []);
 
-  const organizations = ['admin', 'Emergencias']
-  // --- Handlers de Creación ---
 
-const handleCreate = () => {
-    let tempUser = { first_name: "", last_name: "", mail: "", roles: [{ name: ""}], organization: "", is_active: true };
-    
+  const handleCreate = () => {
+    let tempUser = newUser
     showModal({
       content: () => (
         <UserFormModalContent
           title="Crear usuario"
           user={tempUser}
           onChange={(u) => { tempUser = u; }}
+          isEdit={false}
           roleOptions={roleOptions}
           // organizations={organizations}
         />
       ),
       onAccept: async () => {
-        console.log({ tempUser });
         // if (currentUser?.role === "super" && !tempUser.organization) return;
         const created = await userService.createUser(tempUser);
         setUsers([...users, created]);
@@ -55,43 +54,49 @@ const handleCreate = () => {
       acceptText: "Crear"
     });
 
-    setNewUser({ first_name: "", last_name: "", mail: "", roles: [{ name: ""}], organization: "", is_active: true });
+    setNewUser({ first_name: "", last_name: "", mail: "", roles: null, organization: "", is_active: true });
   };
 
   const handleEdit = (user) => {
-    let tempUser = { ...user };
-    showModal(
-      () => (
+    let tempUser = user
+    showModal({
+      content: () => (
         <UserFormModalContent
+          title="Crear usuario"
           user={tempUser}
-          onChange={(u) => { tempUser = u; }}
-          organizations={organizations}
+          onChange={(user) => { tempUser = user; }}
+          isEdit={true}
+          roleOptions={roleOptions}
+          // organizations={organizations}
         />
       ),
-      async () => {
-        const updated = await userService.updateUser(user.id, tempUser);
-        setUsers(users.map((u) => (u.id === user.id ? updated : u)));
+      onAccept: async () => {
+        // if (currentUser?.role === "super" && !tempUser.organization) return;
+        const updatedUser = await userService.updateUser(tempUser);
+        setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
       },
-      { acceptText: "Guardar", cancelText: "Cancelar" }
-    );
+      cancelText: "Cancelar",
+      acceptText: "Guardar"
+    });
+
+    setNewUser({ first_name: "", last_name: "", mail: "", roles: null, organization: "", is_active: true });
   };
-
-  const { showModal } = useContext(ModalContext);
-
-  const confirmDelete = (id) => {
-    showModal(
-      <div>
-        <h3>¿Seguro que deseas eliminar este usuario?</h3>
-      </div>,
-      async () => {
-        await userService.deleteUser(id);
-        setUsers(users.filter((u) => u.id !== id));
+  
+  const handleDelete = (user) => {
+    showModal({
+      content: (
+        <div className="delete-modal">
+          <h3>¿Seguro que deseas eliminar el usuario <span>{user.first_name} {user.last_name}</span>?</h3>
+        </div>
+      ),
+      onAccept: async () => {
+        await userService.deleteUser(user.mail);
+        setUsers(users.filter((u) => u.id !== user.id));
       },
-      { acceptText: "Eliminar", cancelText: "Cancelar" }
-    );
+      cancelText: "Cancelar",
+      acceptText: "Eliminar"
+    })
   };
-
-  console.log(users)
 
   return (
     <div className="tab-panel">
@@ -102,7 +107,7 @@ const handleCreate = () => {
         </button>
       </div>
       <div className="users-wrapper">
-        <UsersTable users={users} />
+        <UsersTable users={users} handleEdit={handleEdit} handleDelete={handleDelete} />
       </div>
     </div>
   );

@@ -58,3 +58,15 @@
 .action-cell button:hover {
   background-color: #e0e0e0;
 }
+
+.action-icon {
+  background: #f1f1f1;
+  padding: 10px;
+  border-radius: 50%;
+  transition: .5s;
+}
+
+.action-icon:hover {
+  background: #d8d8d8;
+  cursor: pointer;
+}

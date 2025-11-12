@@ -1,4 +1,4 @@
-const UsersTable = ({ users }) => {
+const UsersTable = ({ users, handleEdit, handleDelete }) => {
   
   // Opcional: Mostrar un mensaje si no hay usuarios
   if (!users || users.length === 0) {
@@ -7,12 +7,20 @@ const UsersTable = ({ users }) => {
 
   const renderRoles = (roles) => {
     if (!roles || roles.length === 0) {
-      return 'Sin roles'; // O puedes dejarlo vacío: ''
+      return <span className="empty-roles">Sin roles</span>;
     }
-    
-    // Mapea el array de roles y une los nombres con una coma
-    return roles.map(role => role.name).join(', '); 
+
+    return (
+      <div style={{display: "flex", gap: "0.5rem"}}>
+        {roles.map((role) => (
+          <span key={role.name} className="role-item">
+            {role.name}
+          </span>
+        ))}
+      </div>
+    );
   };
+
 
   return (
     // Es buena idea agregar una clase para poder estilizar la tabla
@@ -29,20 +37,16 @@ const UsersTable = ({ users }) => {
       </thead>
       <tbody>
         {users.map(user => (
-          <tr key={user.id || user.mail}>
+          <tr key={`user-${user.id || user.mail}`}>
             <td>{user.first_name} {user.last_name}</td>
             <td>{user.mail}</td>
             <td>{user.organization}</td>
             <td>{renderRoles(user.roles)}</td>
             <td className="action-cell">
-              {/* Aquí puedes poner tu botón o icono, por ejemplo:
-              <button onClick={() => handleEdit(user.id)}>Editar</button> 
-              */}
+              <span onClick={() => handleEdit(user)} className="action-icon material-symbols-outlined">edit</span>
             </td>
             <td className="action-cell">
-              {/* Aquí puedes poner tu botón o icono, por ejemplo:
-              <button onClick={() => handleDelete(user.id)}>Eliminar</button> 
-              */}
+              <span onClick={() => handleDelete(user)} className="action-icon material-symbols-outlined">delete</span>
             </td>
           </tr>
         ))}

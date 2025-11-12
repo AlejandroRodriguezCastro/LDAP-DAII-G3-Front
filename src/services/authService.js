@@ -1,6 +1,7 @@
 // services/authService.js
 import { jwtDecode } from 'jwt-decode';
 import { API_URL } from '../config/api';
+import { userService } from './userService';
 
 export const authService = {
   login: async ({ email, password } ) => {
@@ -23,12 +24,12 @@ export const authService = {
 
       if (token) {
         decodedJWT = jwtDecode(token);
-        // const userData = await userService.getUser(decodedJWT.email);
+        const userData = await userService.getUser(decodedJWT.email);
 
         // Guardamos el token y la info del usuario (todo el JWT decodificado)
         localStorage.setItem("authToken", token);
         localStorage.setItem("user", JSON.stringify(decodedJWT));
-        // localStorage.setItem("userData", JSON.stringify(userData));
+        localStorage.setItem("userData", JSON.stringify(userData));
       }
 
       if (!response.ok) {
