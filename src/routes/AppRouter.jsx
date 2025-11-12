@@ -16,7 +16,7 @@ const AppRouter = () => (
       <Route path="/forgot-password" element={<ForgotPassword />} />
 
       {/* Admin y Super entran */}
-      <Route
+      {/* <Route
         path="/admin"
         element={
           <PrivateRoute role="admin">
@@ -31,6 +31,10 @@ const AppRouter = () => (
             <Dashboard />
           </PrivateRoute>
         }
+      /> */}
+      <Route
+        path="/admin"      
+        element={<Admin />}
       />
       {/* Pantalla normal */}
       <Route

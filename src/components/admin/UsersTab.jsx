@@ -1,33 +1,58 @@
-import React, { useContext, useEffect, useState } from "react";
-import ModalContext from "../context/ModalContext";
-import { userService } from "../../services/userService";
-import UserFormModalContent from "../UserFormModalContent";
+import { useContext, useEffect, useState } from "react";
+import { organizationService } from "../../services/organizationService";
 import { roleService } from "../../services/roleService";
-import './usuarios.css'
+import { userService } from "../../services/userService";
+import ModalContext from "../context/ModalContext";
+import UserFormModalContent from "../UserFormModalContent";
 import UsersTable from "./UsersTable";
+import './usuarios.css';
 
-const UsersTab = ({ currentUser }) => {
-
-  const [users, setUsers] = useState([]);
-  const [roleOptions, setRoleOptions] = useState([]);
-  const [newUser, setNewUser] = useState({ first_name: "", last_name: "", mail: "", roles: null, organization: "", is_active: true });
+const UsersTab = () => {
+  const [users, setUsers] = useState([])
+  const [roleOptions, setRoleOptions] = useState([])
+  const [organizationsOptions, setOrganizationsOptions] = useState([])
+  const [newUser, setNewUser] = useState({ first_name: "", last_name: "", mail: "", roles: null, organization: "", is_active: true })
   const { showModal } = useContext(ModalContext);
-  const organizations = ['admin', 'Emergencias']
+  const activeRoles = localStorage.getItem("activeRoles");
+  const userData = JSON.parse(localStorage.getItem("userData"))
 
   useEffect(() => {
+    const roles = JSON.parse(activeRoles);
+    const isAdmin = roles.some(role => 
+      role.name.includes("super") && role.organization === "admin"
+    );
+    
+    
     // Se hace fetch de data en una transacción
     const loadData = async () => {
-      try {
-        const [usersData, rolesData] = await Promise.all([
-          userService.getUsers(),
-          roleService.getRoles()
-        ]);
-        setUsers(usersData);
-        setRoleOptions(rolesData.roles);
-      } catch (error) {
-        console.error('Error loading data:', error);
+      if (isAdmin) {
+        try {
+          const [usersData, rolesData, organizationsData] = await Promise.all([
+            userService.getUsers(),
+            roleService.getRoles(),
+            organizationService.getOrganizations()
+          ]);
+          setUsers(usersData);
+          setRoleOptions(rolesData.roles)
+          setOrganizationsOptions(organizationsData.organization_units)
+        } catch (error) {
+          console.error('Error loading data:', error)
+        }
+      } else {
+        try {
+          const [usersData, rolesData] = await Promise.all([
+            userService.getUsersByOrganization(userData.organization),
+            roleService.getRolesByOrganization(userData.organization),
+          ]);
+          setUsers(usersData);
+          setRoleOptions(rolesData.roles)
+          setOrganizationsOptions(undefined)
+        }
+        catch (error) {
+          console.error('Error loading data:', error)
+        }
       }
-    };
+    } 
     loadData();
   }, []);
 
@@ -42,11 +67,10 @@ const UsersTab = ({ currentUser }) => {
           onChange={(u) => { tempUser = u; }}
           isEdit={false}
           roleOptions={roleOptions}
-          // organizations={organizations}
+          organizations={organizationsOptions}
         />
       ),
       onAccept: async () => {
-        // if (currentUser?.role === "super" && !tempUser.organization) return;
         const created = await userService.createUser(tempUser);
         setUsers([...users, created]);
       },
@@ -67,11 +91,10 @@ const UsersTab = ({ currentUser }) => {
           onChange={(user) => { tempUser = user; }}
           isEdit={true}
           roleOptions={roleOptions}
-          // organizations={organizations}
+          organizations={organizationsOptions}
         />
       ),
       onAccept: async () => {
-        // if (currentUser?.role === "super" && !tempUser.organization) return;
         const updatedUser = await userService.updateUser(tempUser);
         setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
       },

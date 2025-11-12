@@ -43,7 +43,7 @@ const Admin = () => {
 
       {/* Tabs Content */}
       <div className="tabs-content">
-        {activeTab === "usuarios" && <UsersTab currentUser={currentUser} />}
+        {activeTab === "usuarios" && <UsersTab />}
         {activeTab === "roles" && <RolesTab currentUser={currentUser} />}
       </div>
     </div>
