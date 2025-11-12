@@ -25,6 +25,7 @@ const UsersTab = () => {
     
     // Se hace fetch de data en una transacción
     const loadData = async () => {
+      console.log('Soy admin?', roles, userData)
       if (isAdmin) {
         try {
           const [usersData, rolesData, organizationsData] = await Promise.all([

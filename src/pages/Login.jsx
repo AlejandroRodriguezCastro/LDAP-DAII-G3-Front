@@ -32,7 +32,7 @@ const Login = () => {
   const onSubmit = async (data) => {
     try {
       setError(''); // Limpiar error previo
-      // const { user: decodedJWT } = await authService.login(data);
+      const { user: decodedJWT } = await authService.login(data);
       
       // 🔑 Redirección según roles del JWT
       // if (decodedJWT.roles && (decodedJWT.roles.includes("super_admin_write") || decodedJWT.roles.includes("super_admin_read"))) {

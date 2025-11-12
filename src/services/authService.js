@@ -24,6 +24,7 @@ export const authService = {
       if (token) {
         decodedJWT = jwtDecode(token);
         const userData = await userService.getUser(decodedJWT.email);
+        console.log('ESTE', userData)
         localStorage.setItem("authToken", token);
         localStorage.setItem("user", JSON.stringify(decodedJWT));
         localStorage.setItem("userData", JSON.stringify(userData));
