@@ -3,15 +3,15 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for pages/Admin.jsx</title>
+    <title>Code coverage report for components/admin/validationSchemas/userSchema.jsx</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="../prettify.css" />
-    <link rel="stylesheet" href="../base.css" />
-    <link rel="shortcut icon" type="image/x-icon" href="../favicon.png" />
+    <link rel="stylesheet" href="../../../prettify.css" />
+    <link rel="stylesheet" href="../../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style type='text/css'>
         .coverage-summary .sorter {
-            background-image: url(../sort-arrow-sprite.png);
+            background-image: url(../../../sort-arrow-sprite.png);
         }
     </style>
 </head>
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../index.html">All files</a> / <a href="index.html">pages</a> Admin.jsx</h1>
+        <h1><a href="../../../index.html">All files</a> / <a href="index.html">components/admin/validationSchemas</a> userSchema.jsx</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">60% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>6/10</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">62.5% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>5/8</span>
+                <span class='fraction'>0/0</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">25% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/4</span>
+                <span class='fraction'>0/0</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">60% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>6/10</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -110,28 +110,7 @@
 <a name='L45'></a><a href='#L45'>45</a>
 <a name='L46'></a><a href='#L46'>46</a>
 <a name='L47'></a><a href='#L47'>47</a>
-<a name='L48'></a><a href='#L48'>48</a>
-<a name='L49'></a><a href='#L49'>49</a>
-<a name='L50'></a><a href='#L50'>50</a>
-<a name='L51'></a><a href='#L51'>51</a>
-<a name='L52'></a><a href='#L52'>52</a>
-<a name='L53'></a><a href='#L53'>53</a>
-<a name='L54'></a><a href='#L54'>54</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L48'></a><a href='#L48'>48</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -147,13 +126,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -169,59 +141,69 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import RolesTab from "../components/admin/RolesTab";
-import UsersTab from "../components/admin/UsersTab.jsx";
-import { authService } from "../services/authService.js";
-import "./admin.css";
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import * as Yup from "yup";
 &nbsp;
-const Admin = () =&gt; {
-  const [activeTab, setActiveTab] = useState("usuarios");
-  const navigate = useNavigate();
-  const currentUser = authService.getUser();
+export const userSchema = Yup.object().shape({
+  first_name: Yup.string()
+    .trim()
+    .min(5, "El nombre debe tener al menos 5 caracteres")
+    .max(30, "El nombre no puede tener más de 30 caracteres")
+    .matches(
+      /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s'.-]+$/,
+      "El nombre solo puede contener letras, espacios, puntos o guiones"
+    )
+    .required("El nombre es obligatorio"),
 &nbsp;
-  const handleLogout = <span class="fstat-no" title="function not covered" >()</span> =&gt; {
-<span class="cstat-no" title="statement not covered" >    authService.logout();</span>
-<span class="cstat-no" title="statement not covered" >    navigate("/");</span>
-  };
+  last_name: Yup.string()
+    .trim()
+    .min(5, "El apellido debe tener al menos 5 caracteres")
+    .max(30, "El apellido no puede tener más de 30 caracteres")
+    .matches(
+      /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s'.-]+$/,
+      "El apellido solo puede contener letras, espacios, puntos o guiones"
+    )
+    .required("El apellido es obligatorio"),
 &nbsp;
-  return (
-    &lt;div className="admin-container"&gt;
-      &lt;h1 className="admin-title"&gt;Administración de usuarios&lt;/h1&gt;
-      
-      &lt;div style={{ textAlign: "right", marginBottom: "1rem" }}&gt;
-        &lt;button className="btn-small btn-delete" onClick={handleLogout}&gt;
-          Cerrar sesión
-        &lt;/button&gt;
-      &lt;/div&gt;
+  mail: Yup.string()
+    .trim()
+    .email("Debe ser un correo electrónico válido")
+    .required("El correo electrónico es obligatorio"),
 &nbsp;
-      {/* Tabs Navigation */}
-      &lt;div className="tabs-navigation"&gt;
-        &lt;button
-          className={`tab-button ${activeTab === "usuarios" ? "active" : <span class="branch-1 cbranch-no" title="branch not covered" >""}</span>`}
-          onClick={<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >setActiveTab("usuarios")}</span>
-        &gt;
-          Usuarios
-        &lt;/button&gt;
-        &lt;button
-          className={`tab-button ${activeTab === "roles" ? <span class="branch-0 cbranch-no" title="branch not covered" >"active" </span>: ""}`}
-          onClick={<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >setActiveTab("roles")}</span>
-        &gt;
-          Roles
-        &lt;/button&gt;
-      &lt;/div&gt;
+  organization: Yup.string()
+    .trim()
+    .min(5, "La organización debe tener al menos 5 caracteres")
+    .max(50, "La organización no puede tener más de 50 caracteres")
+    .matches(
+      /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s_.-]+$/,
+      "La organización contiene caracteres no permitidos"
+    )
+    .required("La organización es obligatoria"),
 &nbsp;
-      {/* Tabs Content */}
-      &lt;div className="tabs-content"&gt;
-        {activeTab === "usuarios" &amp;&amp; &lt;UsersTab /&gt;}
-        {activeTab === "roles" &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >&lt;RolesTab currentUser={currentUser} /&gt;}</span>
-      &lt;/div&gt;
-    &lt;/div&gt;
-  );
-};
-&nbsp;
-export default Admin;
+  roles: Yup.array()
+    .of(
+      Yup.object().shape({
+        name: Yup.string().required(),
+      })
+    )
+    .min(1, "Debe seleccionar al menos un rol")
+    .required("Debe seleccionar al menos un rol"),
+});
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -231,14 +213,14 @@ export default Admin;
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
                 at 2025-11-13T23:15:59.037Z
             </div>
-        <script src="../prettify.js"></script>
+        <script src="../../../prettify.js"></script>
         <script>
             window.onload = function () {
                 prettyPrint();
             };
         </script>
-        <script src="../sorter.js"></script>
-        <script src="../block-navigation.js"></script>
+        <script src="../../../sorter.js"></script>
+        <script src="../../../block-navigation.js"></script>
     </body>
 </html>
     

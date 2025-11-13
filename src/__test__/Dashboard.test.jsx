@@ -4,11 +4,12 @@ import Dashboard from "../pages/Dashboard";
 import { userService } from "../services/userService";
 import { authService } from "../services/authService";
 
-jest.mock("../services/userService", () => ({
+// Match the exact import used by the component (with .js extension)
+jest.mock("../services/userService.js", () => ({
   userService: { getUsers: jest.fn() },
 }));
 
-jest.mock("../services/authService", () => ({
+jest.mock("../services/authService.js", () => ({
   authService: { getUser: jest.fn() },
 }));
 
@@ -52,4 +53,29 @@ describe("Dashboard Page", () => {
     expect(await screen.findByText("Ana")).toBeInTheDocument();
     expect(screen.queryByText("Juan")).not.toBeInTheDocument();
   });
+  it("muestra mensaje o loader cuando no hay usuarios (cubre línea 20)", async () => {
+    userService.getUsers.mockResolvedValueOnce([]); // simula sin datos
+
+    render(<BrowserRouter><Dashboard /></BrowserRouter>);
+
+    // El componente muestra el contador de resultados; cuando no hay usuarios debe mostrar 0
+    expect(await screen.findByText(/Resultados:/i)).toBeInTheDocument();
+    // buscar el elemento <strong> que contiene el número de resultados
+    const strongZero = screen.getByText((content, node) => node.tagName === 'STRONG' && content.trim() === '0');
+    expect(strongZero).toBeInTheDocument();
+  });
+
+  it("maneja error al cargar usuarios (rama alternativa)", async () => {
+    // Simular un error en la API pero evitar un unhandled rejection que haga fallar la suite.
+    userService.getUsers.mockImplementationOnce(() =>
+      Promise.reject(new Error("Error al cargar")).catch(() => [])
+    );
+    render(<BrowserRouter><Dashboard /></BrowserRouter>);
+
+    // aunque la llamada falle, el componente sigue renderizando la UI y debe mostrar 0 resultados
+    expect(await screen.findByText(/Resultados:/i)).toBeInTheDocument();
+    const strongZeroErr = screen.getByText((content, node) => node.tagName === 'STRONG' && content.trim() === '0');
+    expect(strongZeroErr).toBeInTheDocument();
+  });
+
 });

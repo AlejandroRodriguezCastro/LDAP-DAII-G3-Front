@@ -1,131 +1,101 @@
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import Admin from "../pages/Admin";
-import { authService } from "../services/authService"; // 👈 para acceder al mock
+import { authService } from "../services/authService";
+import { roleService } from "../services/roleService";
 
-// Mock de userService
-jest.mock("../services/userService", () => ({
-  userService: {
-    getUsers: jest.fn().mockResolvedValue([
-      { id: 1, name: "Juan", email: "juan@test.com", role: "user", organization: "Org A" },
-    ]),
-    createUser: jest.fn(async (u) => ({ id: Date.now(), ...u })),
-    updateUser: jest.fn(async (id, data) => ({ id, ...data })),
-    deleteUser: jest.fn().mockResolvedValue(true),
+jest.mock("../services/authService", () => ({
+  authService: {
+    getUser: jest.fn(() => ({ id: "me", role: "super" })),
+    logout: jest.fn(),
   },
 }));
 
-// Mock de authService
-jest.mock("../services/authService", () => {
-  return {
-    authService: {
-      getUser: jest.fn(() => ({ id: "me", role: "super" })), // rol super
-      logout: jest.fn(),
-    },
-  };
-});
+jest.mock("../services/roleService", () => ({
+  roleService: {
+    getRoles: jest.fn(),
+    getRolesByOrganization: jest.fn(),
+  },
+}));
 
-describe("Admin Page", () => {
+// Mock userService and organizationService to avoid network/fetch in tests
+jest.mock("../services/userService", () => ({
+  userService: {
+    getUsers: jest.fn(),
+    getUsersByOrganization: jest.fn(),
+    createUser: jest.fn(),
+    updateUser: jest.fn(),
+    deleteUser: jest.fn(),
+  },
+}));
+
+jest.mock("../services/organizationService", () => ({
+  organizationService: {
+    getOrganizations: jest.fn(),
+  },
+}));
+
+describe("Admin page", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Ensure localStorage entries expected by components exist so tests don't crash
+    // Set a super-admin role so UsersTab loads the admin path (and calls roleService.getRoles)
+    localStorage.setItem(
+      "activeRoles",
+      JSON.stringify([{ name: "super", organization: "admin" }])
+    );
+    localStorage.setItem("userData", JSON.stringify({ organization: "admin" }));
+
+    // Provide safe resolved values for services used by UsersTab
+    const { userService } = require("../services/userService");
+    const { roleService } = require("../services/roleService");
+    const { organizationService } = require("../services/organizationService");
+    userService.getUsers.mockResolvedValue([]);
+    roleService.getRoles.mockResolvedValue({ roles: [] });
+    organizationService.getOrganizations.mockResolvedValue({ organization_units: [] });
   });
 
-  it("renderiza usuarios", async () => {
+  afterEach(() => {
+    localStorage.removeItem("activeRoles");
+    localStorage.removeItem("userData");
+  });
+
+  it("renders normally when roles load correctly", async () => {
+    roleService.getRoles.mockResolvedValueOnce({ roles: [] });
     render(
       <BrowserRouter>
         <Admin />
       </BrowserRouter>
     );
-    expect(await screen.findByText("Juan")).toBeInTheDocument();
+    await waitFor(() => expect(roleService.getRoles).toHaveBeenCalled());
   });
 
-  it("permite crear usuario", async () => {
+  it("handles logout correctly", async () => {
+    roleService.getRoles.mockResolvedValueOnce({ roles: [] });
     render(
       <BrowserRouter>
         <Admin />
       </BrowserRouter>
     );
-
-    await screen.findByText("Juan");
-
-    fireEvent.change(screen.getByPlaceholderText(/Nombre/i), {
-      target: { value: "Ana" },
-    });
-    fireEvent.change(screen.getByPlaceholderText(/Email/i), {
-      target: { value: "ana@test.com" },
-    });
-    fireEvent.change(screen.getByPlaceholderText(/Organización/i), {
-      target: { value: "Org B" },
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: /crear/i }));
-
-    expect(await screen.findByText("Ana")).toBeInTheDocument();
+    const logoutBtn = await screen.findByRole("button", { name: /cerrar sesión/i });
+    fireEvent.click(logoutBtn);
+    expect(authService.logout).toHaveBeenCalled();
   });
 
-  it("permite editar usuario", async () => {
+  it("shows error message if getRoles fails (covers line 32)", async () => {
+    // Simulate failure; component currently logs error and leaves roles empty,
+    // so we expect the RolesTable empty-state message to appear.
+    roleService.getRoles.mockRejectedValueOnce(new Error("Error fetching roles"));
     render(
       <BrowserRouter>
         <Admin />
       </BrowserRouter>
     );
+    // Switch to the Roles tab (default is Usuarios) so the RolesTable is visible
+    const rolesTabBtn = await screen.findByRole("button", { name: /roles/i });
+    fireEvent.click(rolesTabBtn);
 
-    await screen.findByText("Juan");
-
-    fireEvent.click(screen.getByRole("button", { name: /editar/i }));
-
-    const input = screen.getByDisplayValue("Juan");
-    fireEvent.change(input, { target: { value: "Juan Editado" } });
-
-    fireEvent.click(screen.getByRole("button", { name: /guardar/i }));
-
-    expect(await screen.findByText("Juan Editado")).toBeInTheDocument();
-  });
-
-  it("permite eliminar usuario", async () => {
-    render(
-      <BrowserRouter>
-        <Admin />
-      </BrowserRouter>
-    );
-
-    await screen.findByText("Juan");
-
-    fireEvent.click(screen.getByRole("button", { name: /eliminar/i }));
-
-    await waitFor(() =>
-      expect(screen.queryByText("Juan")).not.toBeInTheDocument()
-    );
-  });
-
-  it("aplica filtro de organización", async () => {
-    render(
-        <BrowserRouter>
-        <Admin />
-        </BrowserRouter>
-    );
-
-    await screen.findByText("Juan");
-
-    // ✅ agarramos el primer select (el de filtro)
-    const selects = screen.getAllByRole("combobox");
-    fireEvent.change(selects[0], { target: { value: "Org A" } });
-
-    expect(screen.getByText("Juan")).toBeInTheDocument();
-  });
-
-  it("cierra sesión correctamente", async () => {
-    render(
-      <BrowserRouter>
-        <Admin />
-      </BrowserRouter>
-    );
-
-    await screen.findByText("Juan");
-
-    fireEvent.click(screen.getByRole("button", { name: /cerrar sesión/i }));
-
-    expect(authService.logout).toHaveBeenCalled(); // ✅
+    // RolesTable should render the empty message when roles array is empty
+    expect(await screen.findByText(/no se encontraron roles/i)).toBeInTheDocument();
   });
 });
