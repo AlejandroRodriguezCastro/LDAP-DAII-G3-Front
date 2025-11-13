@@ -1,121 +1,184 @@
-// components/__tests__/RoleFormModalContent.fixed.test.jsx
+// components/__tests__/RoleFormModalContent.test.jsx
 import React from "react";
-import { render, screen, fireEvent, act } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import RoleFormModalContent from "../components/admin/RoleFormModalContent";
+import ModalContext from "../components/context/ModalContext";
+import { roleSchema } from "../components/admin/validationSchemas/roleSchema";
 
-// Mock temporal para evitar el loop - pero usando el componente real
-const originalComponent = jest.requireActual('../components/admin/RoleFormModalContent').default;
+jest.mock("../components/admin/validationSchemas/roleSchema", () => ({
+  roleSchema: {
+    validate: jest.fn(),
+  },
+}));
 
-// Wrapper que previene el loop
-const SafeRoleFormModalContent = (props) => {
-  const [internalRole, setInternalRole] = React.useState(props.role || {});
-  
-  const safeOnChange = (updatedForm) => {
-    if (props.onChange) {
-      props.onChange(updatedForm);
-    }
-    // No actualizamos internalRole para evitar el loop
-  };
+const mockSetValidToSave = jest.fn();
 
-  return React.createElement(originalComponent, {
-    ...props,
-    role: internalRole,
-    onChange: safeOnChange
-  });
+const renderWithContext = (props) => {
+  return render(
+    <ModalContext.Provider value={{ setValidToSave: mockSetValidToSave }}>
+      <RoleFormModalContent {...props} />
+    </ModalContext.Provider>
+  );
 };
 
-describe("RoleFormModalContent - Fixed Version", () => {
-  const mockOnChange = jest.fn();
-
+describe("RoleFormModalContent", () => {
   beforeEach(() => {
-    mockOnChange.mockClear();
+    jest.clearAllMocks();
   });
 
-  test("renders all form fields with empty values", () => {
-    render(<SafeRoleFormModalContent onChange={mockOnChange} />);
+  test("renderiza el título si existe", () => {
+    roleSchema.validate.mockResolvedValueOnce({});
 
-    expect(screen.getByPlaceholderText("Nombre del rol")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Descripción")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Organización")).toBeInTheDocument();
-  });
+    renderWithContext({
+      title: "Crear Rol",
+      role: {},
+      isAdmin: true,
+      onChange: jest.fn(),
+      organizations: [],
+    });
 
-  test("renders with title when provided", () => {
-    render(<SafeRoleFormModalContent title="Crear Rol" onChange={mockOnChange} />);
     expect(screen.getByText("Crear Rol")).toBeInTheDocument();
   });
 
-  test("pre-fills form with role data", () => {
-    const roleData = {
+  test("renderiza inputs básicos", () => {
+    roleSchema.validate.mockResolvedValueOnce({});
+
+    renderWithContext({
+      title: "",
+      role: {},
+      isAdmin: false,
+      onChange: jest.fn(),
+      organizations: [],
+    });
+
+    expect(screen.getByPlaceholderText("Nombre del rol")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Descripción")).toBeInTheDocument();
+  });
+
+  test("llama onChange cuando el usuario escribe", () => {
+    roleSchema.validate.mockResolvedValue({});
+
+    const mockOnChange = jest.fn();
+
+    renderWithContext({
+      title: "",
+      role: {},
+      isAdmin: false,
+      onChange: mockOnChange,
+      organizations: [],
+    });
+
+    const input = screen.getByPlaceholderText("Nombre del rol");
+    fireEvent.change(input, { target: { name: "name", value: "Admin" } });
+
+    expect(mockOnChange).toHaveBeenCalledWith({
       name: "Admin",
-      description: "Rol administrativo", 
-      organization: "org-admin"
-    };
-
-    render(<SafeRoleFormModalContent role={roleData} onChange={mockOnChange} />);
-
-    expect(screen.getByDisplayValue("Admin")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("Rol administrativo")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("org-admin")).toBeInTheDocument();
+      description: "",
+      organization: "",
+    });
   });
 
-  test("handles name input changes", () => {
-    render(<SafeRoleFormModalContent onChange={mockOnChange} />);
+  test("si es admin, muestra el select de organizaciones", () => {
+    roleSchema.validate.mockResolvedValue({});
 
-    const nameInput = screen.getByPlaceholderText("Nombre del rol");
-    
-    act(() => {
-      fireEvent.change(nameInput, { target: { value: "Nuevo Rol", name: "name" } });
+    const orgs = [{ ou: ["Org1"] }, { ou: ["Org2"] }];
+
+    renderWithContext({
+      title: "",
+      role: {},
+      isAdmin: true,
+      organizations: orgs,
+      onChange: jest.fn(),
     });
 
-    expect(mockOnChange).toHaveBeenCalledWith(expect.objectContaining({
-      name: "Nuevo Rol"
-    }));
+    expect(screen.getByText("Selecciona una organización")).toBeInTheDocument();
+    expect(screen.getByText("Org1")).toBeInTheDocument();
+    expect(screen.getByText("Org2")).toBeInTheDocument();
   });
 
-  test("handles description textarea changes", () => {
-    render(<SafeRoleFormModalContent onChange={mockOnChange} />);
+  test("si NO es admin, muestra un input disabled", () => {
+    roleSchema.validate.mockResolvedValue({});
 
-    const descriptionInput = screen.getByPlaceholderText("Descripción");
-    
-    act(() => {
-      fireEvent.change(descriptionInput, { 
-        target: { value: "Nueva descripción", name: "description" } 
-      });
+    renderWithContext({
+      title: "",
+      role: {},
+      isAdmin: false,
+      organizations: [],
+      onChange: jest.fn(),
     });
-
-    expect(mockOnChange).toHaveBeenCalledWith(expect.objectContaining({
-      description: "Nueva descripción"
-    }));
-  });
-
-  test("handles organization input changes", () => {
-    render(<SafeRoleFormModalContent onChange={mockOnChange} />);
 
     const orgInput = screen.getByPlaceholderText("Organización");
-    
-    act(() => {
-      fireEvent.change(orgInput, { 
-        target: { value: "nueva-org", name: "organization" } 
-      });
+    expect(orgInput).toBeDisabled();
+  });
+
+  test("setValidToSave(true) cuando validate pasa", async () => {
+    roleSchema.validate.mockResolvedValueOnce({});
+
+    renderWithContext({
+      title: "",
+      role: { name: "A" },
+      isAdmin: true,
+      organizations: [],
+      onChange: jest.fn(),
     });
 
-    expect(mockOnChange).toHaveBeenCalledWith(expect.objectContaining({
-      organization: "nueva-org"
-    }));
+    await waitFor(() => {
+      expect(mockSetValidToSave).toHaveBeenCalledWith(true);
+    });
   });
 
-  test("textarea has correct rows attribute", () => {
-    render(<SafeRoleFormModalContent onChange={mockOnChange} />);
+  test("muestra errores cuando la validación falla", async () => {
+    roleSchema.validate.mockRejectedValue({
+      inner: [
+        { path: "name", message: "Nombre requerido" },
+        { path: "description", message: "Descripción requerida" },
+      ],
+    });
 
-    const textarea = screen.getByPlaceholderText("Descripción");
-    expect(textarea).toHaveAttribute("rows", "3");
+    renderWithContext({
+      title: "",
+      role: {},
+      isAdmin: true,
+      organizations: [],
+      onChange: jest.fn(),
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Nombre requerido")).toBeInTheDocument();
+      expect(screen.getByText("Descripción requerida")).toBeInTheDocument();
+      expect(mockSetValidToSave).toHaveBeenCalledWith(false);
+    });
   });
 
+  test("actualiza el form cuando cambian las props role", async () => {
+    roleSchema.validate.mockResolvedValue({});
 
-  test("handles undefined role prop", () => {
-    render(<SafeRoleFormModalContent onChange={mockOnChange} />);
+    const { rerender } = render(
+      <ModalContext.Provider value={{ setValidToSave: mockSetValidToSave }}>
+        <RoleFormModalContent
+          title=""
+          isAdmin={true}
+          role={{ name: "Inicial" }}
+          organizations={[]}
+          onChange={jest.fn()}
+        />
+      </ModalContext.Provider>
+    );
 
-    expect(screen.getByPlaceholderText("Nombre del rol")).toHaveValue("");
-    expect(screen.getByPlaceholderText("Descripción")).toHaveValue("");
-    expect(screen.getByPlaceholderText("Organización")).toHaveValue("");
+    expect(screen.getByPlaceholderText("Nombre del rol").value).toBe("Inicial");
+
+    rerender(
+      <ModalContext.Provider value={{ setValidToSave: mockSetValidToSave }}>
+        <RoleFormModalContent
+          title=""
+          isAdmin={true}
+          role={{ name: "Modificado" }}
+          organizations={[]}
+          onChange={jest.fn()}
+        />
+      </ModalContext.Provider>
+    );
+
+    expect(screen.getByPlaceholderText("Nombre del rol").value).toBe("Modificado");
   });
 });
