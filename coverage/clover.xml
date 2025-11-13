@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1763074801020" clover="3.2.0">
-  <project timestamp="1763074801020" name="All files">
-    <metrics statements="391" coveredstatements="314" conditionals="200" coveredconditionals="133" methods="115" coveredmethods="80" elements="706" coveredelements="527" complexity="0" loc="391" ncloc="391" packages="7" files="21" classes="21"/>
+<coverage generated="1763075759145" clover="3.2.0">
+  <project timestamp="1763075759145" name="All files">
+    <metrics statements="391" coveredstatements="342" conditionals="200" coveredconditionals="153" methods="115" coveredmethods="94" elements="706" coveredelements="589" complexity="0" loc="391" ncloc="391" packages="7" files="21" classes="21"/>
     <package name="components">
       <metrics statements="6" coveredstatements="6" conditionals="3" coveredconditionals="3" methods="3" coveredmethods="3"/>
       <file name="AuthLayout.jsx" path="D:\UADE\Integracion de aplicaciones\LDAP-DAII-G3-Front\src\components\AuthLayout.jsx">
@@ -21,79 +21,79 @@
       </file>
     </package>
     <package name="components.admin">
-      <metrics statements="212" coveredstatements="142" conditionals="134" coveredconditionals="72" methods="70" coveredmethods="40"/>
+      <metrics statements="212" coveredstatements="170" conditionals="134" coveredconditionals="92" methods="70" coveredmethods="54"/>
       <file name="RoleFormModalContent.jsx" path="D:\UADE\Integracion de aplicaciones\LDAP-DAII-G3-Front\src\components\admin\RoleFormModalContent.jsx">
-        <metrics statements="25" coveredstatements="1" conditionals="27" coveredconditionals="0" methods="7" coveredmethods="0"/>
-        <line num="5" count="1" type="cond" truecount="0" falsecount="1"/>
-        <line num="6" count="0" type="stmt"/>
-        <line num="8" count="0" type="stmt"/>
-        <line num="14" count="0" type="stmt"/>
-        <line num="16" count="0" type="stmt"/>
-        <line num="17" count="0" type="stmt"/>
-        <line num="24" count="0" type="stmt"/>
-        <line num="25" count="0" type="stmt"/>
-        <line num="28" count="0" type="stmt"/>
-        <line num="29" count="0" type="stmt"/>
-        <line num="30" count="0" type="stmt"/>
-        <line num="31" count="0" type="stmt"/>
-        <line num="32" count="0" type="stmt"/>
-        <line num="34" count="0" type="stmt"/>
-        <line num="35" count="0" type="stmt"/>
-        <line num="36" count="0" type="stmt"/>
-        <line num="38" count="0" type="stmt"/>
-        <line num="39" count="0" type="stmt"/>
-        <line num="43" count="0" type="stmt"/>
-        <line num="44" count="0" type="stmt"/>
-        <line num="45" count="0" type="stmt"/>
-        <line num="46" count="0" type="stmt"/>
-        <line num="47" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="50" count="0" type="stmt"/>
-        <line num="86" count="0" type="stmt"/>
+        <metrics statements="25" coveredstatements="25" conditionals="27" coveredconditionals="24" methods="7" coveredmethods="7"/>
+        <line num="5" count="2" type="cond" truecount="0" falsecount="1"/>
+        <line num="6" count="21" type="stmt"/>
+        <line num="8" count="21" type="stmt"/>
+        <line num="14" count="21" type="stmt"/>
+        <line num="16" count="21" type="stmt"/>
+        <line num="17" count="9" type="stmt"/>
+        <line num="24" count="21" type="stmt"/>
+        <line num="25" count="18" type="stmt"/>
+        <line num="28" count="21" type="stmt"/>
+        <line num="29" count="18" type="stmt"/>
+        <line num="30" count="18" type="stmt"/>
+        <line num="31" count="16" type="stmt"/>
+        <line num="32" count="16" type="stmt"/>
+        <line num="34" count="2" type="stmt"/>
+        <line num="35" count="2" type="stmt"/>
+        <line num="36" count="4" type="stmt"/>
+        <line num="38" count="2" type="stmt"/>
+        <line num="39" count="2" type="stmt"/>
+        <line num="43" count="21" type="stmt"/>
+        <line num="44" count="1" type="stmt"/>
+        <line num="45" count="1" type="stmt"/>
+        <line num="46" count="1" type="stmt"/>
+        <line num="47" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="50" count="21" type="stmt"/>
+        <line num="86" count="4" type="stmt"/>
       </file>
       <file name="RolesTab.jsx" path="D:\UADE\Integracion de aplicaciones\LDAP-DAII-G3-Front\src\components\admin\RolesTab.jsx">
-        <metrics statements="42" coveredstatements="33" conditionals="19" coveredconditionals="11" methods="12" coveredmethods="6"/>
+        <metrics statements="42" coveredstatements="28" conditionals="19" coveredconditionals="7" methods="12" coveredmethods="8"/>
         <line num="9" count="2" type="stmt"/>
-        <line num="10" count="26" type="stmt"/>
-        <line num="11" count="26" type="stmt"/>
-        <line num="12" count="26" type="stmt"/>
-        <line num="13" count="26" type="stmt"/>
-        <line num="14" count="26" type="stmt"/>
-        <line num="15" count="26" type="stmt"/>
-        <line num="16" count="26" type="stmt"/>
-        <line num="18" count="26" type="stmt"/>
-        <line num="19" count="11" type="stmt"/>
-        <line num="20" count="11" type="stmt"/>
-        <line num="23" count="11" type="cond" truecount="2" falsecount="0"/>
-        <line num="24" count="11" type="cond" truecount="2" falsecount="0"/>
-        <line num="26" count="11" type="stmt"/>
-        <line num="28" count="11" type="cond" truecount="2" falsecount="0"/>
-        <line num="30" count="10" type="stmt"/>
-        <line num="35" count="0" type="cond" truecount="0" falsecount="3"/>
-        <line num="36" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="39" count="1" type="stmt"/>
-        <line num="40" count="1" type="cond" truecount="2" falsecount="1"/>
-        <line num="41" count="1" type="stmt"/>
-        <line num="44" count="10" type="stmt"/>
-        <line num="48" count="11" type="stmt"/>
-        <line num="51" count="26" type="stmt"/>
-        <line num="52" count="3" type="stmt"/>
-        <line num="54" count="3" type="stmt"/>
+        <line num="10" count="14" type="stmt"/>
+        <line num="11" count="14" type="stmt"/>
+        <line num="12" count="14" type="stmt"/>
+        <line num="13" count="14" type="stmt"/>
+        <line num="14" count="14" type="stmt"/>
+        <line num="15" count="14" type="stmt"/>
+        <line num="16" count="14" type="stmt"/>
+        <line num="18" count="14" type="stmt"/>
+        <line num="19" count="5" type="stmt"/>
+        <line num="20" count="5" type="stmt"/>
+        <line num="23" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="24" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="26" count="5" type="stmt"/>
+        <line num="28" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="30" count="5" type="stmt"/>
+        <line num="35" count="4" type="cond" truecount="2" falsecount="1"/>
+        <line num="36" count="4" type="cond" truecount="1" falsecount="1"/>
+        <line num="39" count="0" type="stmt"/>
+        <line num="40" count="0" type="cond" truecount="0" falsecount="3"/>
+        <line num="41" count="0" type="stmt"/>
+        <line num="44" count="1" type="stmt"/>
+        <line num="48" count="5" type="stmt"/>
+        <line num="51" count="14" type="stmt"/>
+        <line num="52" count="0" type="stmt"/>
+        <line num="54" count="0" type="stmt"/>
         <line num="56" count="0" type="stmt"/>
         <line num="60" count="0" type="stmt"/>
-        <line num="66" count="2" type="stmt"/>
-        <line num="67" count="2" type="stmt"/>
-        <line num="73" count="1" type="stmt"/>
-        <line num="74" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="78" count="1" type="cond" truecount="2" falsecount="1"/>
-        <line num="80" count="1" type="stmt"/>
-        <line num="86" count="3" type="stmt"/>
-        <line num="89" count="26" type="stmt"/>
-        <line num="90" count="0" type="stmt"/>
-        <line num="97" count="0" type="stmt"/>
-        <line num="98" count="0" type="stmt"/>
-        <line num="99" count="0" type="stmt"/>
-        <line num="101" count="0" type="stmt"/>
-        <line num="109" count="26" type="stmt"/>
+        <line num="66" count="0" type="stmt"/>
+        <line num="67" count="0" type="stmt"/>
+        <line num="73" count="0" type="stmt"/>
+        <line num="74" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="78" count="0" type="cond" truecount="0" falsecount="3"/>
+        <line num="80" count="0" type="stmt"/>
+        <line num="86" count="0" type="stmt"/>
+        <line num="89" count="14" type="stmt"/>
+        <line num="90" count="2" type="stmt"/>
+        <line num="97" count="2" type="stmt"/>
+        <line num="98" count="2" type="stmt"/>
+        <line num="99" count="1" type="stmt"/>
+        <line num="101" count="1" type="stmt"/>
+        <line num="109" count="14" type="stmt"/>
       </file>
       <file name="RolesTable.jsx" path="D:\UADE\Integracion de aplicaciones\LDAP-DAII-G3-Front\src\components\admin\RolesTable.jsx">
         <metrics statements="10" coveredstatements="9" conditionals="6" coveredconditionals="6" methods="4" coveredmethods="4"/>
@@ -110,7 +110,7 @@
       </file>
       <file name="UserFormModalContent.jsx" path="D:\UADE\Integracion de aplicaciones\LDAP-DAII-G3-Front\src\components\admin\UserFormModalContent.jsx">
         <metrics statements="75" coveredstatements="55" conditionals="66" coveredconditionals="43" methods="25" coveredmethods="19"/>
-        <line num="5" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="5" count="3" type="cond" truecount="1" falsecount="1"/>
         <line num="6" count="20" type="stmt"/>
         <line num="8" count="20" type="stmt"/>
         <line num="9" count="20" type="stmt"/>
@@ -187,55 +187,55 @@
         <line num="197" count="2" type="stmt"/>
       </file>
       <file name="UsersTab.jsx" path="D:\UADE\Integracion de aplicaciones\LDAP-DAII-G3-Front\src\components\admin\UsersTab.jsx">
-        <metrics statements="48" coveredstatements="33" conditionals="6" coveredconditionals="4" methods="16" coveredmethods="5"/>
+        <metrics statements="48" coveredstatements="42" conditionals="6" coveredconditionals="4" methods="16" coveredmethods="10"/>
         <line num="10" count="2" type="stmt"/>
-        <line num="11" count="16" type="stmt"/>
-        <line num="12" count="15" type="stmt"/>
-        <line num="13" count="15" type="stmt"/>
-        <line num="14" count="15" type="stmt"/>
-        <line num="15" count="15" type="stmt"/>
-        <line num="16" count="15" type="stmt"/>
-        <line num="17" count="15" type="stmt"/>
-        <line num="19" count="15" type="stmt"/>
-        <line num="20" count="9" type="stmt"/>
-        <line num="21" count="9" type="stmt"/>
-        <line num="22" count="6" type="cond" truecount="2" falsecount="0"/>
-        <line num="27" count="6" type="stmt"/>
-        <line num="28" count="6" type="cond" truecount="2" falsecount="0"/>
-        <line num="29" count="5" type="stmt"/>
-        <line num="30" count="5" type="stmt"/>
-        <line num="35" count="4" type="stmt"/>
-        <line num="36" count="4" type="stmt"/>
-        <line num="37" count="4" type="stmt"/>
-        <line num="39" count="1" type="stmt"/>
+        <line num="11" count="22" type="stmt"/>
+        <line num="12" count="20" type="stmt"/>
+        <line num="13" count="20" type="stmt"/>
+        <line num="14" count="20" type="stmt"/>
+        <line num="15" count="20" type="stmt"/>
+        <line num="16" count="20" type="stmt"/>
+        <line num="17" count="20" type="stmt"/>
+        <line num="19" count="20" type="stmt"/>
+        <line num="20" count="12" type="stmt"/>
+        <line num="21" count="12" type="stmt"/>
+        <line num="22" count="9" type="cond" truecount="2" falsecount="0"/>
+        <line num="27" count="9" type="stmt"/>
+        <line num="28" count="9" type="cond" truecount="2" falsecount="0"/>
+        <line num="29" count="8" type="stmt"/>
+        <line num="30" count="8" type="stmt"/>
+        <line num="35" count="8" type="stmt"/>
+        <line num="36" count="8" type="stmt"/>
+        <line num="37" count="8" type="stmt"/>
+        <line num="39" count="0" type="stmt"/>
         <line num="42" count="1" type="stmt"/>
         <line num="43" count="1" type="stmt"/>
         <line num="47" count="1" type="stmt"/>
         <line num="48" count="1" type="stmt"/>
         <line num="49" count="1" type="stmt"/>
         <line num="52" count="0" type="stmt"/>
-        <line num="56" count="6" type="stmt"/>
-        <line num="60" count="15" type="stmt"/>
-        <line num="61" count="1" type="stmt"/>
-        <line num="62" count="1" type="stmt"/>
+        <line num="56" count="9" type="stmt"/>
+        <line num="60" count="20" type="stmt"/>
+        <line num="61" count="2" type="stmt"/>
+        <line num="62" count="2" type="stmt"/>
         <line num="64" count="0" type="stmt"/>
         <line num="67" count="0" type="stmt"/>
-        <line num="74" count="0" type="stmt"/>
-        <line num="75" count="0" type="stmt"/>
-        <line num="81" count="1" type="stmt"/>
-        <line num="84" count="15" type="stmt"/>
-        <line num="85" count="0" type="stmt"/>
-        <line num="86" count="0" type="stmt"/>
+        <line num="74" count="1" type="stmt"/>
+        <line num="75" count="1" type="stmt"/>
+        <line num="81" count="2" type="stmt"/>
+        <line num="84" count="20" type="stmt"/>
+        <line num="85" count="2" type="stmt"/>
+        <line num="86" count="2" type="stmt"/>
         <line num="88" count="0" type="stmt"/>
         <line num="91" count="0" type="stmt"/>
-        <line num="98" count="0" type="stmt"/>
-        <line num="99" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="105" count="0" type="stmt"/>
-        <line num="108" count="15" type="stmt"/>
-        <line num="109" count="0" type="stmt"/>
-        <line num="116" count="0" type="stmt"/>
-        <line num="117" count="0" type="stmt"/>
-        <line num="124" count="15" type="stmt"/>
+        <line num="98" count="1" type="stmt"/>
+        <line num="99" count="1" type="cond" truecount="0" falsecount="2"/>
+        <line num="105" count="2" type="stmt"/>
+        <line num="108" count="20" type="stmt"/>
+        <line num="109" count="1" type="stmt"/>
+        <line num="116" count="1" type="stmt"/>
+        <line num="117" count="1" type="stmt"/>
+        <line num="124" count="20" type="stmt"/>
       </file>
       <file name="UsersTable.jsx" path="D:\UADE\Integracion de aplicaciones\LDAP-DAII-G3-Front\src\components\admin\UsersTable.jsx">
         <metrics statements="12" coveredstatements="11" conditionals="10" coveredconditionals="8" methods="6" coveredmethods="6"/>
@@ -261,21 +261,21 @@
       </file>
       <file name="userSchema.jsx" path="D:\UADE\Integracion de aplicaciones\LDAP-DAII-G3-Front\src\components\admin\validationSchemas\userSchema.jsx">
         <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-        <line num="3" count="2" type="stmt"/>
+        <line num="3" count="3" type="stmt"/>
       </file>
     </package>
     <package name="components.context">
       <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
       <file name="ModalContext.jsx" path="D:\UADE\Integracion de aplicaciones\LDAP-DAII-G3-Front\src\components\context\ModalContext.jsx">
         <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
-        <line num="3" count="4" type="stmt"/>
+        <line num="3" count="5" type="stmt"/>
       </file>
     </package>
     <package name="config">
       <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
       <file name="api.js" path="D:\UADE\Integracion de aplicaciones\LDAP-DAII-G3-Front\src\config\api.js">
         <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-        <line num="1" count="6" type="stmt"/>
+        <line num="1" count="5" type="stmt"/>
       </file>
     </package>
     <package name="pages">
@@ -378,13 +378,13 @@
       <metrics statements="91" coveredstatements="91" conditionals="33" coveredconditionals="33" methods="12" coveredmethods="12"/>
       <file name="organizationService.js" path="D:\UADE\Integracion de aplicaciones\LDAP-DAII-G3-Front\src\services\organizationService.js">
         <metrics statements="7" coveredstatements="7" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
-        <line num="3" count="4" type="stmt"/>
-        <line num="5" count="13" type="stmt"/>
-        <line num="6" count="13" type="stmt"/>
-        <line num="7" count="13" type="stmt"/>
+        <line num="3" count="3" type="stmt"/>
+        <line num="5" count="3" type="stmt"/>
+        <line num="6" count="3" type="stmt"/>
+        <line num="7" count="3" type="stmt"/>
         <line num="14" count="2" type="stmt"/>
-        <line num="16" count="11" type="stmt"/>
-        <line num="17" count="11" type="stmt"/>
+        <line num="16" count="1" type="stmt"/>
+        <line num="17" count="1" type="stmt"/>
       </file>
       <file name="roleService.js" path="D:\UADE\Integracion de aplicaciones\LDAP-DAII-G3-Front\src\services\roleService.js">
         <metrics statements="37" coveredstatements="37" conditionals="10" coveredconditionals="10" methods="5" coveredmethods="5"/>
