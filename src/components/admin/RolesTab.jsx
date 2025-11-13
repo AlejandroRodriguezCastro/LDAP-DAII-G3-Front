@@ -1,54 +1,65 @@
-import React, { useContext, useEffect, useState } from "react";
-import ModalContext from "../context/ModalContext";
+import { useContext, useEffect, useState } from "react";
+import { organizationService } from "../../services/organizationService";
 import { roleService } from "../../services/roleService";
-import RoleFormModalContent from "./RoleFormModalContent";
-import './roles.css'
+import ModalContext from "../context/ModalContext";
+import "./roles.css";
 import RolesTable from "./RolesTable";
+import RoleFormModalContent from "./RoleFormModalContent";
 
 const RolesTab = ({ currentUser }) => {
   const [roles, setRoles] = useState([]);
+  const [organizationsOptions, setOrganizationsOptions] = useState([]);
   const [newRole, setNewRole] = useState({ name: "", description: "", organization: "" });
+  const [isAdmin, setIsAdmin] = useState(false);
   const { showModal } = useContext(ModalContext);
+  const userData = JSON.parse(localStorage.getItem("userData"));
+  const activeRoles = JSON.parse(localStorage.getItem("activeRoles"));
 
   useEffect(() => {
-    const loadRoles = async () => {
+    const loadData = async () => {
       try {
-        // Obtener el usuario del localStorage (como hace UsersTab)
-        const userData = JSON.parse(localStorage.getItem("userData"));
-        const activeRoles = JSON.parse(localStorage.getItem("activeRoles"));
-        
-        const isAdmin = activeRoles.some(role => 
-          role.name.includes("super") && role.organization === "admin"
-        );
-        
-        if (isAdmin) {
-          // Admin ve todos los roles
-          const data = await roleService.getRoles();
-          setRoles((data && data.roles) || []);
+
+        const adminCheck =
+          activeRoles?.some(
+            (role) => role.name.includes("super") && role.organization === "admin"
+          ) || false;
+        setIsAdmin(adminCheck);
+
+        if (adminCheck) {
+          // Admin: carga todos los roles y organizaciones
+          const [rolesData, organizationsData] = await Promise.all([
+            roleService.getRoles(),
+            organizationService.getOrganizations(),
+          ]);
+
+          setRoles((rolesData && rolesData.roles) || []);
+          setOrganizationsOptions(organizationsData.organization_units || []);
         } else {
-          // Usuario normal ve solo roles de su organización
-          const data = await roleService.getRolesByOrganization(userData.organization);
-          setRoles((data && data.roles) || []);
+          // Usuario normal: solo roles de su organización
+          const rolesData = await roleService.getRolesByOrganization(userData.organization);
+          setRoles((rolesData && rolesData.roles) || []);
+          setOrganizationsOptions(undefined);
         }
       } catch (error) {
-        console.error("Error loading roles:", error);
+        console.error("Error loading roles/organizations:", error);
       }
     };
-    loadRoles();
+
+    loadData();
   }, []);
 
   const handleCreate = () => {
-    let tempRole = { ...newRole };
+    let tempRole = { ...newRole, organization: userData.organization };
 
     showModal({
       content: () => (
         <RoleFormModalContent
           title="Crear rol"
           role={tempRole}
-          onChange={(r) => {
-            tempRole = r;
-          }}
+          isAdmin={isAdmin}
+          onChange={(r) => (tempRole = r)}
           currentUser={currentUser}
+          organizations={organizationsOptions}
         />
       ),
       onAccept: async () => {
@@ -58,27 +69,18 @@ const RolesTab = ({ currentUser }) => {
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           });
-          
-          // Refresh con la misma lógica de filtro
+
           const userData = JSON.parse(localStorage.getItem("userData"));
-          const activeRoles = JSON.parse(localStorage.getItem("activeRoles"));
-          const isAdmin = activeRoles.some(role => 
-            role.name.includes("super") && role.organization === "admin"
-          );
-          
-          if (isAdmin) {
-            const data = await roleService.getRoles();
-            setRoles((data && data.roles) || []);
-          } else {
-            const data = await roleService.getRolesByOrganization(userData.organization);
-            setRoles((data && data.roles) || []);
-          }
+          const data = isAdmin
+            ? await roleService.getRoles()
+            : await roleService.getRolesByOrganization(userData.organization);
+
+          setRoles((data && data.roles) || []);
         } catch (error) {
           console.error("Error creating role:", error);
         }
       },
-      cancelText: "Cancelar",
-      acceptText: "Crear",
+      showButtons: false
     });
 
     setNewRole({ name: "", description: "", organization: "" });
@@ -108,7 +110,11 @@ const RolesTab = ({ currentUser }) => {
     <div className="tab-panel">
       <div className="roles-header">
         <h2>Gestión de Roles</h2>
-        <button className="btn-primary btn-add-role" style={{ marginBottom: "1rem" }} onClick={handleCreate}>
+        <button
+          className="btn-primary btn-add-role"
+          style={{ marginBottom: "1rem" }}
+          onClick={handleCreate}
+        >
           Crear rol
         </button>
       </div>

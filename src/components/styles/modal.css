@@ -46,7 +46,7 @@
   background: #9ca3af;
 }
 
-.modal-btn:hover {
+.modal-btn:not(:disabled):hover {
   background: #0056b3;
 }
 
@@ -111,4 +111,9 @@
 
 .delete-modal h3 span {
   color: #0056b3;
+}
+
+.modal-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
