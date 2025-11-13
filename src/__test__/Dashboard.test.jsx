@@ -52,4 +52,21 @@ describe("Dashboard Page", () => {
     expect(await screen.findByText("Ana")).toBeInTheDocument();
     expect(screen.queryByText("Juan")).not.toBeInTheDocument();
   });
+  it("muestra mensaje o loader cuando no hay usuarios (cubre línea 20)", async () => {
+    userService.getUsers.mockResolvedValueOnce([]); // simula sin datos
+
+    render(<BrowserRouter><Dashboard /></BrowserRouter>);
+
+    // si mostrás un loader
+    expect(await screen.findByText(/cargando|no hay usuarios/i)).toBeInTheDocument();
+  });
+
+  it("maneja error al cargar usuarios (rama alternativa)", async () => {
+    userService.getUsers.mockRejectedValueOnce(new Error("Error al cargar"));
+
+    render(<BrowserRouter><Dashboard /></BrowserRouter>);
+
+    expect(await screen.findByText(/error|no se pudieron cargar/i)).toBeInTheDocument();
+  });
+
 });
