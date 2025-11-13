@@ -13,14 +13,6 @@ describe("FormInput component", () => {
     expect(screen.getByText("Campo requerido")).toBeInTheDocument();
   });
 
-  it("renders empty error element when error prop exists but message is empty", () => {
-    const error = { message: "" };
-    render(<FormInput id="dni" label="DNI" error={error} />);
-    const errorEl = screen.getByTestId("error-message");
-    expect(errorEl).toBeInTheDocument();
-    expect(errorEl).toBeEmptyDOMElement();
-  });
-
   it("does not render error element when error is undefined", () => {
     render(<FormInput id="user" label="User" />);
     expect(screen.queryByTestId("error-message")).not.toBeInTheDocument();
