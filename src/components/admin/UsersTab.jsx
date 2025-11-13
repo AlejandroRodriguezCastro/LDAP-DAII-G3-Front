@@ -3,9 +3,9 @@ import { organizationService } from "../../services/organizationService";
 import { roleService } from "../../services/roleService";
 import { userService } from "../../services/userService";
 import ModalContext from "../context/ModalContext";
-import UserFormModalContent from "../UserFormModalContent";
 import UsersTable from "./UsersTable";
 import './usuarios.css';
+import UserFormModalContent from "./UserFormModalContent";
 
 const UsersTab = () => {
   const [users, setUsers] = useState([])
@@ -25,7 +25,6 @@ const UsersTab = () => {
     
     // Se hace fetch de data en una transacción
     const loadData = async () => {
-      console.log('Soy admin?', roles, userData)
       if (isAdmin) {
         try {
           const [usersData, rolesData, organizationsData] = await Promise.all([

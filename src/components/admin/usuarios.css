@@ -70,3 +70,16 @@
   background: #d8d8d8;
   cursor: pointer;
 }
+
+.text-area {
+  border: 1px solid lightgray;
+  border-radius: 7.5px;
+  padding: 10px;
+  resize: vertical;
+}
+
+.error-text {
+  color: rgb(211, 49, 49);
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+}

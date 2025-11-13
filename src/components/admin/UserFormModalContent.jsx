@@ -1,14 +1,20 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useContext } from "react";
+import ModalContext from "../context/ModalContext";
+import { userSchema } from "./validationSchemas/userSchema";
 
 const UserFormModalContent = ({ title, user, onChange, organizations = [], roleOptions = [], isEdit }) => {
+  const { setValidToSave } = useContext(ModalContext);
+
   const [form, setForm] = useState(user);
   const [roles, setRoles] = useState(roleOptions);
+  const [errors, setErrors] = useState({}); // ✅ nuevo estado de errores
   const userData = JSON.parse(localStorage.getItem("userData")) || {};
   const activeRoles = JSON.parse(localStorage.getItem("activeRoles") || "[]");
 
   const isAdmin = useMemo(() => {
     return activeRoles.some(
-      role => role.name?.toLowerCase().includes("super") && role.organization === "admin"
+      (role) =>
+        role.name?.toLowerCase().includes("super") && role.organization === "admin"
     );
   }, [activeRoles]);
 
@@ -16,27 +22,22 @@ const UserFormModalContent = ({ title, user, onChange, organizations = [], roleO
   useEffect(() => {
     setForm(user || {});
 
-    // Determinar organización base
     const orgFromUser = user?.organization;
     const orgFromUserData = userData?.organization;
 
     if (orgFromUser) {
-      // Modo edición: filtrar roles por la organización del usuario (aunque seas admin)
-      setRoles(roleOptions.filter(r => r.organization === orgFromUser));
-      setForm(prev => {
+      setRoles(roleOptions.filter((r) => r.organization === orgFromUser));
+      setForm((prev) => {
         const updated = { ...prev, organization: orgFromUser };
         if (onChange) onChange(updated);
         return updated;
       });
     } else {
-      // Modo creación: comportamientos distintos según permisos
       if (isAdmin) {
-        // admin creando: ver todos las roles
         setRoles(roleOptions);
       } else {
-        // no-admin creando: fijar la org del usuario actual y filtrar
-        setRoles(roleOptions.filter(r => r.organization === orgFromUserData));
-        setForm(prev => {
+        setRoles(roleOptions.filter((r) => r.organization === orgFromUserData));
+        setForm((prev) => {
           const updated = { ...prev, organization: orgFromUserData };
           if (onChange) onChange(updated);
           return updated;
@@ -45,6 +46,25 @@ const UserFormModalContent = ({ title, user, onChange, organizations = [], roleO
     }
   }, [user, roleOptions, userData?.organization, isAdmin, onChange]);
 
+  // ✅ Validación
+  useEffect(() => {
+    validateForm();
+  }, [form]);
+
+  const validateForm = async () => {
+    try {
+      await userSchema.validate(form, { abortEarly: false });
+      setErrors({});
+      setValidToSave(true);
+    } catch (err) {
+      const newErrors = {};
+      err.inner.forEach((e) => {
+        newErrors[e.path] = e.message;
+      });
+      setErrors(newErrors);
+      setValidToSave(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -80,8 +100,9 @@ const UserFormModalContent = ({ title, user, onChange, organizations = [], roleO
       return;
     }
 
-    setForm((prev) => ({ ...prev, [name]: value }));
-    if (onChange) onChange({ ...form, [name]: value });
+    const updated = { ...form, [name]: value };
+    setForm(updated);
+    if (onChange) onChange(updated);
   };
 
   const removeRole = (role) => {
@@ -94,44 +115,72 @@ const UserFormModalContent = ({ title, user, onChange, organizations = [], roleO
   };
 
   return (
-    <form className="form-inline" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+    <form
+      className="form-inline"
+      style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+    >
       {title && <h3>{title}</h3>}
 
-      <input
-        name="first_name"
-        type="text"
-        placeholder="Nombre"
-        value={form.first_name || ""}
-        onChange={handleChange}
-      />
-      <input
-        name="last_name"
-        type="text"
-        placeholder="Apellido"
-        value={form.last_name || ""}
-        onChange={handleChange}
-      />
-      <input
-        name="mail"
-        type="email"
-        disabled={isEdit}
-        placeholder="Email"
-        value={form.mail || ""}
-        onChange={handleChange}
-      />
+      {/* Nombre */}
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        <input
+          name="first_name"
+          type="text"
+          placeholder="Nombre"
+          value={form.first_name || ""}
+          onChange={handleChange}
+        />
+        {errors.first_name && <span className="error-text">{errors.first_name}</span>}
+      </div>
 
+      {/* Apellido */}
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        <input
+          name="last_name"
+          type="text"
+          placeholder="Apellido"
+          value={form.last_name || ""}
+          onChange={handleChange}
+        />
+        {errors.last_name && <span className="error-text">{errors.last_name}</span>}
+      </div>
+
+      {/* Email */}
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        <input
+          name="mail"
+          type="email"
+          disabled={isEdit}
+          placeholder="Email"
+          value={form.mail || ""}
+          onChange={handleChange}
+        />
+        {errors.mail && <span className="error-text">{errors.mail}</span>}
+      </div>
+
+      {/* Organización (solo admin) */}
       {isAdmin && (
-        <select name="organization" value={form.organization || ""} onChange={handleChange}>
-          <option value="">Selecciona una organización</option>
-          {organizations.map((org, i) => (
-            <option key={i} value={org.ou[0]}>
-              {org.ou[0]}
-            </option>
-          ))}
-        </select>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <select
+            name="organization"
+            value={form.organization || ""}
+            onChange={handleChange}
+          >
+            <option value="">Selecciona una organización</option>
+            {organizations.map((org, i) => (
+              <option key={i} value={org.ou[0]}>
+                {org.ou[0]}
+              </option>
+            ))}
+          </select>
+          {errors.organization && (
+            <span className="error-text">{errors.organization}</span>
+          )}
+        </div>
       )}
 
-      <div className="roles-container">
+      {/* Roles */}
+      <div className="roles-container" style={{ display: "flex", flexDirection: "column" }}>
         <select name="role" value={form.roles?.[0]?.name || ""} onChange={handleChange}>
           <option value="">Seleccione una opción</option>
           {roles.map((rol) => (
@@ -140,6 +189,7 @@ const UserFormModalContent = ({ title, user, onChange, organizations = [], roleO
             </option>
           ))}
         </select>
+        {errors.roles && <span className="error-text">{errors.roles}</span>}
 
         <div className="roles-items">
           {form.roles?.length ? (
