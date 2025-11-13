@@ -13,8 +13,23 @@ const RolesTab = ({ currentUser }) => {
   useEffect(() => {
     const loadRoles = async () => {
       try {
-        const data = await roleService.getRoles();
-        setRoles((data && data.roles) || []);
+        // Obtener el usuario del localStorage (como hace UsersTab)
+        const userData = JSON.parse(localStorage.getItem("userData"));
+        const activeRoles = JSON.parse(localStorage.getItem("activeRoles"));
+        
+        const isAdmin = activeRoles.some(role => 
+          role.name.includes("super") && role.organization === "admin"
+        );
+        
+        if (isAdmin) {
+          // Admin ve todos los roles
+          const data = await roleService.getRoles();
+          setRoles((data && data.roles) || []);
+        } else {
+          // Usuario normal ve solo roles de su organización
+          const data = await roleService.getRolesByOrganization(userData.organization);
+          setRoles((data && data.roles) || []);
+        }
       } catch (error) {
         console.error("Error loading roles:", error);
       }
@@ -33,6 +48,7 @@ const RolesTab = ({ currentUser }) => {
           onChange={(r) => {
             tempRole = r;
           }}
+          currentUser={currentUser}
         />
       ),
       onAccept: async () => {
@@ -42,9 +58,21 @@ const RolesTab = ({ currentUser }) => {
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           });
-          // Refresh list after create to ensure consistent data
-          const data = await roleService.getRoles();
-          setRoles((data && data.roles) || []);
+          
+          // Refresh con la misma lógica de filtro
+          const userData = JSON.parse(localStorage.getItem("userData"));
+          const activeRoles = JSON.parse(localStorage.getItem("activeRoles"));
+          const isAdmin = activeRoles.some(role => 
+            role.name.includes("super") && role.organization === "admin"
+          );
+          
+          if (isAdmin) {
+            const data = await roleService.getRoles();
+            setRoles((data && data.roles) || []);
+          } else {
+            const data = await roleService.getRolesByOrganization(userData.organization);
+            setRoles((data && data.roles) || []);
+          }
         } catch (error) {
           console.error("Error creating role:", error);
         }
