@@ -188,4 +188,54 @@ describe("RolesTab", () => {
 
     consoleSpy.mockRestore();
   });
+  test("loads roles for non-admin user and sets organizationsOptions undefined", async () => {
+  mockLocalStorage.getItem.mockImplementation((key) => {
+    if (key === "userData") return JSON.stringify({ organization: "sales" });
+    if (key === "activeRoles")
+      return JSON.stringify([{ name: "employee", organization: "sales" }]);
+    return null;
+  });
+
+  roleService.getRolesByOrganization = jest.fn().mockResolvedValue({
+    roles: [{ id: 9, name: "Vendedor" }],
+  });
+
+  await act(async () => {
+    renderWithContext(<RolesTab />);
+  });
+
+  await waitFor(() => {
+    expect(roleService.getRolesByOrganization).toHaveBeenCalledWith("sales");
+  });
+
+  // organizationsOptions debe ser undefined → NO llama getOrganizations
+  expect(organizationService.getOrganizations).not.toHaveBeenCalled();
+});
+test("handleCreate triggers modal, calls createRole and refreshes roles", async () => {
+  const mockRolesAfter = { roles: [{ id: 123, name: "NuevoRol" }] };
+
+  roleService.createRole.mockResolvedValue({});
+  roleService.getRoles.mockResolvedValue(mockRolesAfter);
+
+  let acceptCallback = null;
+
+  mockShowModal.mockImplementation(({ onAccept }) => {
+    acceptCallback = onAccept;
+  });
+
+  await act(async () => {
+    renderWithContext(<RolesTab />);
+  });
+
+  fireEvent.click(screen.getByText("Crear rol"));
+
+  // Ejecutamos onAccept real
+  await act(async () => {
+    await acceptCallback();
+  });
+
+  expect(roleService.createRole).toHaveBeenCalled();
+  expect(roleService.getRoles).toHaveBeenCalled();
+});
+
 });
