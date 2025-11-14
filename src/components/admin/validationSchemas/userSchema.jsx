@@ -6,7 +6,7 @@ export const userSchema = Yup.object().shape({
     .min(5, "El nombre debe tener al menos 5 caracteres")
     .max(30, "El nombre no puede tener más de 30 caracteres")
     .matches(
-      /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s'.-]+$/,
+      /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s'.-_]+$/,
       "El nombre solo puede contener letras, espacios, puntos o guiones"
     )
     .required("El nombre es obligatorio"),

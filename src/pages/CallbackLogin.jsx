@@ -37,7 +37,7 @@ const CallbackLogin = () => {
   const onSubmit = async (data) => {
     try {
       setError("");
-      const { token, user } = await authService.login(data);
+      const { token, user } = await authService.login(data, true);;
 
       // Token se guarda localmente
       localStorage.setItem("authToken", token);
@@ -87,8 +87,8 @@ const CallbackLogin = () => {
       </form>
 
       <div className="auth-links">
-        <Link to="/forgot-password">¿Olvidaste tu contraseña?</Link>
-        <Link to="/register">Crear cuenta</Link>
+        {/* <Link to="/forgot-password">¿Olvidaste tu contraseña?</Link>
+        <Link to="/register">Crear cuenta</Link> */}
       </div>
     </AuthLayout>
   );

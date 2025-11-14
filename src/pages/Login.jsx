@@ -83,8 +83,8 @@ const Login = () => {
 
       {/* Links extra */}
       <div className="auth-links">
-        <Link to="/forgot-password">¿Olvidaste tu contraseña?</Link>
-        <Link to="/register">Crear cuenta</Link>
+        {/* <Link to="/forgot-password">¿Olvidaste tu contraseña?</Link>
+        <Link to="/register">Crear cuenta</Link> */}
       </div>
     </AuthLayout>
   );
