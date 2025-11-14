@@ -7,10 +7,12 @@ export const roleService = {
    */
   getRoles: async () => {
     try {
+      const token = localStorage.getItem('authToken');
       const response = await fetch(`${API_URL}/roles/`, {
         method: "GET",
         headers: {
           "accept": "application/json",
+          'Authorization': `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -55,10 +57,12 @@ export const roleService = {
    */
   createRole: async (roleData) => {
     try {
+      const token = localStorage.getItem('authToken');
       const response = await fetch(`${API_URL}/roles/`, {
         method: "POST",
         headers: {
           "accept": "application/json",
+          'Authorization': `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -89,10 +93,12 @@ export const roleService = {
    */
   updateRole: async (roleId, roleData) => {
     try {
+      const token = localStorage.getItem('authToken');
       const response = await fetch(`${API_URL}/roles/${roleId}`, {
         method: "PUT",
         headers: {
           "accept": "application/json",
+          'Authorization': `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -118,11 +124,13 @@ export const roleService = {
    * @returns {Promise<Object>}
    */
   deleteRole: async (roleId) => {
+    const token = localStorage.getItem('authToken');
     try {
       const response = await fetch(`${API_URL}/roles/${roleId}`, {
         method: "DELETE",
         headers: {
           "accept": "application/json",
+          'Authorization': `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });

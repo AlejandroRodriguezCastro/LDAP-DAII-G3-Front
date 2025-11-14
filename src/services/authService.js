@@ -4,7 +4,7 @@ import { API_URL } from '../config/api';
 import { userService } from './userService';
 
 export const authService = {
-  login: async ({ email, password } ) => {
+  login: async ({ email, password }, isCallback ) => {
     try {
       const response = await fetch(`${API_URL}/v1/auth/token`, {
         method: 'POST',
@@ -23,12 +23,15 @@ export const authService = {
 
       if (token) {
         decodedJWT = jwtDecode(token);
-        const userData = await userService.getUser(decodedJWT.email);
-        console.log('ESTE', userData)
         localStorage.setItem("authToken", token);
-        localStorage.setItem("user", JSON.stringify(decodedJWT));
-        localStorage.setItem("userData", JSON.stringify(userData));
-        localStorage.setItem("activeRoles", JSON.stringify(userData.roles))
+
+        // ⛔ Si es callback → NO cargar userData
+        if (!isCallback) {
+          const userData = await userService.getUser(decodedJWT.email);
+          localStorage.setItem("user", JSON.stringify(decodedJWT));
+          localStorage.setItem("userData", JSON.stringify(userData));
+          localStorage.setItem("activeRoles", JSON.stringify(userData.roles));
+        }
       }
 
       if (!response.ok) {

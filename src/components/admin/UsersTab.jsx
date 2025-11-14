@@ -6,6 +6,8 @@ import ModalContext from "../context/ModalContext";
 import UsersTable from "./UsersTable";
 import './usuarios.css';
 import UserFormModalContent from "./UserFormModalContent";
+import { ToastContainer, toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
 const UsersTab = () => {
   const [users, setUsers] = useState([])
@@ -18,44 +20,41 @@ const UsersTab = () => {
 
   useEffect(() => {
     const roles = JSON.parse(activeRoles);
-    const isAdmin = roles.some(role => 
+    const loggedMail = userData.mail;
+
+    const isAdmin = roles.some(role =>
       role.name.includes("super") && role.organization === "admin"
     );
-    
-    
-    // Se hace fetch de data en una transacción
+
     const loadData = async () => {
-      if (isAdmin) {
-        try {
+      try {
+        if (isAdmin) {
           const [usersData, rolesData, organizationsData] = await Promise.all([
             userService.getUsers(),
             roleService.getRoles(),
             organizationService.getOrganizations()
           ]);
-          setUsers(usersData);
-          setRoleOptions(rolesData.roles)
-          setOrganizationsOptions(organizationsData.organization_units)
-        } catch (error) {
-          console.error('Error loading data:', error)
-        }
-      } else {
-        try {
+
+          setUsers(usersData.filter(u => u.mail !== loggedMail));
+          setRoleOptions(rolesData.roles);
+          setOrganizationsOptions(organizationsData.organization_units);
+        } else {
           const [usersData, rolesData] = await Promise.all([
             userService.getUsersByOrganization(userData.organization),
             roleService.getRolesByOrganization(userData.organization),
           ]);
-          setUsers(usersData);
-          setRoleOptions(rolesData.roles)
-          setOrganizationsOptions(undefined)
+
+          setUsers(usersData.filter(u => u.mail !== loggedMail));
+          setRoleOptions(rolesData.roles);
+          setOrganizationsOptions(undefined);
         }
-        catch (error) {
-          console.error('Error loading data:', error)
-        }
+      } catch (error) {
+        console.error("Error loading data:", error);
       }
-    } 
+    };
+
     loadData();
   }, []);
-
 
   const handleCreate = () => {
     let tempUser = newUser
@@ -72,6 +71,33 @@ const UsersTab = () => {
       ),
       onAccept: async () => {
         const created = await userService.createUser(tempUser);
+        if (created?.detail) {
+          let msg;
+          if (Array.isArray(created.detail)) {
+            msg = created.detail[0]?.msg;
+          } else {
+            msg = created.detail;
+          }
+          toast.error(msg ?? "Error al crear usuario", {
+            position: "bottom-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "light",
+          })
+          return;
+        }
+        toast.success("Usuario creado con éxito", {
+          position: "bottom-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "light",
+        })
         setUsers([...users, created]);
       },
       cancelText: "Cancelar",
@@ -86,7 +112,7 @@ const UsersTab = () => {
     showModal({
       content: () => (
         <UserFormModalContent
-          title="Crear usuario"
+          title="Actualizar usuario"
           user={tempUser}
           onChange={(user) => { tempUser = user; }}
           isEdit={true}
@@ -96,6 +122,33 @@ const UsersTab = () => {
       ),
       onAccept: async () => {
         const updatedUser = await userService.updateUser(tempUser);
+        if (updatedUser?.detail) {
+          let msg;
+          if (Array.isArray(updatedUser.detail)) {
+            msg = updatedUser.detail[0]?.msg;
+          } else {
+            msg = updatedUser.detail;
+          }
+          toast.error(msg ?? "Error al actualizar usuario", {
+            position: "bottom-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "light",
+          })
+          return;
+        }
+        toast.success("Usuario actualizado con éxito", {
+          position: "bottom-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "light",
+        })
         setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
       },
       cancelText: "Cancelar",
@@ -114,6 +167,15 @@ const UsersTab = () => {
       ),
       onAccept: async () => {
         await userService.deleteUser(user.mail);
+        toast.success("Usuario eliminado con éxito", {
+          position: "bottom-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "light",
+        })
         setUsers(users.filter((u) => u.id !== user.id));
       },
       cancelText: "Cancelar",
@@ -132,6 +194,7 @@ const UsersTab = () => {
       <div className="users-wrapper">
         <UsersTable users={users} handleEdit={handleEdit} handleDelete={handleDelete} />
       </div>
+      <ToastContainer />
     </div>
   );
 };
