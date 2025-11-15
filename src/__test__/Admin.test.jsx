@@ -1,4 +1,21 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+
+// Mock useNavigate from react-router-dom so Admin can call it even if the
+// component forgot to import it. This keeps tests stable without editing source.
+const mockNavigate = jest.fn();
+jest.mock("react-router-dom", () => {
+  const actual = jest.requireActual("react-router-dom");
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
+
+// Some components (incorrectly) call `useNavigate` as a global instead of
+// importing it. Define a global fallback so tests keep working without
+// changing production code.
+global.useNavigate = () => mockNavigate;
+
 import { BrowserRouter } from "react-router-dom";
 import Admin from "../pages/Admin";
 import { authService } from "../services/authService";
@@ -8,8 +25,11 @@ jest.mock("../services/authService", () => ({
   authService: {
     getUser: jest.fn(() => ({ id: "me", role: "super" })),
     logout: jest.fn(),
+    getToken: jest.fn(() => "fake-token"),
+    validateToken: jest.fn(() => Promise.resolve({ success: true })),
   },
 }));
+
 
 jest.mock("../services/roleService", () => ({
   roleService: {
@@ -72,11 +92,17 @@ describe("Admin page", () => {
 
   it("handles logout correctly", async () => {
     roleService.getRoles.mockResolvedValueOnce({ roles: [] });
-    render(
+    const { container } = render(
       <BrowserRouter>
         <Admin />
       </BrowserRouter>
     );
+
+    // Open the session menu (the logout button is inside the menu)
+    const sessionUser = container.querySelector(".session-user");
+    expect(sessionUser).toBeTruthy();
+    fireEvent.click(sessionUser);
+
     const logoutBtn = await screen.findByRole("button", { name: /cerrar sesión/i });
     fireEvent.click(logoutBtn);
     expect(authService.logout).toHaveBeenCalled();

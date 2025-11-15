@@ -93,6 +93,10 @@ describe("UsersTab – cobertura optimizada", () => {
 
     render(wrapper(<UsersTab />));
 
+    // Abrir el modal para disparar onAccept (Crear)
+    const btnCrear = await screen.findByText("Crear usuario");
+    fireEvent.click(btnCrear);
+
     await waitFor(() => {
       expect(userService.createUser).toHaveBeenCalled();
     });
@@ -163,5 +167,103 @@ describe("UsersTab – cobertura optimizada", () => {
     await waitFor(() => {
       expect(userService.deleteUser).toHaveBeenCalledWith("a@test.com");
     });
+  });
+
+  test("no llama a APIs cuando el token es inválido en carga", async () => {
+    // Simular token inválido en la comprobación inicial
+    useCheckToken.mockReturnValueOnce(() => false);
+
+    userService.getUsers.mockResolvedValue([]);
+    roleService.getRoles.mockResolvedValue({ roles: [] });
+    organizationService.getOrganizations.mockResolvedValue({ organization_units: [] });
+
+    render(wrapper(<UsersTab />));
+
+    // Esperamos un tick para que el efecto se ejecute
+    await waitFor(() => {
+      expect(userService.getUsers).not.toHaveBeenCalled();
+      expect(roleService.getRoles).not.toHaveBeenCalled();
+    });
+  });
+
+  test("flujo no-admin usa endpoints por organización", async () => {
+    // Forzar roles no-admin
+    localStorage.setItem(
+      "activeRoles",
+      JSON.stringify([{ name: "user", organization: "org1" }])
+    );
+    localStorage.setItem("userData", JSON.stringify({ mail: "u@org1", organization: "org1" }));
+
+    userService.getUsersByOrganization.mockResolvedValue([{ id: 5, mail: "b@org1" }]);
+    roleService.getRolesByOrganization.mockResolvedValue({ roles: [{ id: 7 }] });
+
+    render(wrapper(<UsersTab />));
+
+    await waitFor(() => {
+      expect(userService.getUsersByOrganization).toHaveBeenCalledWith("org1");
+      expect(roleService.getRolesByOrganization).toHaveBeenCalledWith("org1");
+    });
+
+    // Restore default activeRoles for other tests
+    localStorage.setItem(
+      "activeRoles",
+      JSON.stringify([{ name: "super_admin", organization: "admin" }])
+    );
+    localStorage.setItem(
+      "userData",
+      JSON.stringify({ mail: "admin@test.com", organization: "org1" })
+    );
+  });
+
+  test("muestra toast.error al fallar createUser con detalle array", async () => {
+    const reactToastify = require("react-toastify");
+    const toastErrorSpy = jest.spyOn(reactToastify.toast, "error");
+
+    userService.getUsers.mockResolvedValue([]);
+    roleService.getRoles.mockResolvedValue({ roles: [] });
+    organizationService.getOrganizations.mockResolvedValue({ organization_units: [] });
+
+    userService.createUser.mockResolvedValue({ detail: [{ msg: "fallo" }] });
+
+    mockShowModal.mockImplementation(({ onAccept }) => {
+      onAccept();
+    });
+
+    render(wrapper(<UsersTab />));
+
+    const btnCrear = await screen.findByText("Crear usuario");
+    fireEvent.click(btnCrear);
+
+    await waitFor(() => {
+      expect(toastErrorSpy).toHaveBeenCalledWith("fallo", expect.any(Object));
+    });
+
+    toastErrorSpy.mockRestore();
+  });
+
+  test("muestra toast.error al fallar updateUser con detalle string", async () => {
+    const reactToastify = require("react-toastify");
+    const toastErrorSpy = jest.spyOn(reactToastify.toast, "error");
+
+    userService.getUsers.mockResolvedValue([
+      { id: 1, mail: "a@test.com", first_name: "Juan", last_name: "Pérez", organization: "org1", roles: [] }
+    ]);
+    roleService.getRoles.mockResolvedValue({ roles: [] });
+    organizationService.getOrganizations.mockResolvedValue({ organization_units: [] });
+
+    userService.updateUser.mockResolvedValue({ detail: "err" });
+
+    render(wrapper(<UsersTab />));
+
+    const editBtn = await screen.findAllByText("edit");
+
+    mockShowModal.mockImplementation(({ onAccept }) => onAccept());
+    fireEvent.click(editBtn[0]);
+
+    await waitFor(() => {
+      expect(toastErrorSpy).toHaveBeenCalledWith("err", expect.any(Object));
+    });
+
+    toastErrorSpy.mockRestore();
   });
 });
