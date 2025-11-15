@@ -11,7 +11,7 @@ const Admin = () => {
   const currentUser = JSON.parse(localStorage.getItem("userData"));
 
   // ✅ CONDICIÓN: Solo mostrar Dashboard para admin@citypass.com
-  const showDashboard = currentUser?.email === "admin@citypass.com";
+  const showDashboard = currentUser?.mail === "admin@citypass.com";
   return (
     <div className="admin-container">
       <div style={{ textAlign: "right", marginBottom: "1rem" }}>
