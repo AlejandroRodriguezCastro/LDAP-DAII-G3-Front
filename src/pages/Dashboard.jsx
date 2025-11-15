@@ -15,17 +15,32 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const currentUser = authService.getUser();
 
-  useEffect(() => {
-    if (currentUser?.role !== "super") {
-      navigate("/home"); // solo super puede entrar
+useEffect(() => {
+  const user = authService.getUser();
+  const hasSuperAccess = user?.roles?.some(role => 
+    role.includes("super_admin")
+  );
+  
+  if (!hasSuperAccess) {
+    navigate("/home");
+    return;
+  }
+  
+  userService.getUsers().then(users => {
+    console.log("🔍 ESTRUCTURA DE USUARIOS:", users);
+    if (users.length > 0) {
+      console.log("📋 Primer usuario:", users[0]);
+      console.log("🎯 Campos:", Object.keys(users[0]));
     }
-    userService.getUsers().then(setUsers);
-  }, [currentUser, navigate]);
+    setUsers(users);
+  });
+}, [currentUser, navigate]);
 
   // aplicar filtros dinámicos
   const filteredUsers = users.filter((u) => {
     const matchOrg = filterOrg ? u.organization === filterOrg : true;
-    const matchRole = filterRole ? u.role === filterRole : true;
+    const userRole = u.roles?.[0]?.name || 'Sin rol';
+    const matchRole = filterRole ? userRole === filterRole : true;
     return matchOrg && matchRole;
   });
 
@@ -38,14 +53,22 @@ const Dashboard = () => {
 
   // por rol (dentro de usuarios filtrados)
   const roleCount = filteredUsers.reduce((acc, u) => {
-    acc[u.role] = (acc[u.role] || 0) + 1;
+    const roleName = u.roles?.[0]?.name || 'Sin rol';
+    acc[roleName] = (acc[roleName] || 0) + 1;
     return acc;
   }, {});
   const roleData = Object.entries(roleCount).map(([name, value]) => ({ name, value }));
 
-  // valores únicos para dropdowns
+// valores únicos para dropdowns
   const organizations = [...new Set(users.map((u) => u.organization))];
-  const roles = [...new Set(users.map((u) => u.role))];
+
+// Calcular roles igual que el gráfico pero para TODOS los usuarios
+  const allRoleCount = users.reduce((acc, u) => {
+  const roleName = u.roles?.[0]?.name || 'Sin rol';
+  acc[roleName] = (acc[roleName] || 0) + 1;
+  return acc;
+  }, {});
+  const roles = Object.keys(allRoleCount);
 
   return (
     <div className="dashboard-container">
@@ -90,8 +113,8 @@ const Dashboard = () => {
               dataKey="value"
               label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
             >
-              {orgData.map((_, index) => (
-                <Cell key={index} fill={COLORS[index % COLORS.length]} />
+              {orgData.map((entry, index) => (
+                <Cell key={`org-cell-${entry.name}-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
             <Tooltip />
@@ -111,8 +134,8 @@ const Dashboard = () => {
               dataKey="value"
               label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
             >
-              {roleData.map((_, index) => (
-                <Cell key={index} fill={COLORS[index % COLORS.length]} />
+              {roleData.map((entry, index) => (
+                <Cell key={`role-cell-${entry.name}-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
             <Tooltip />
@@ -122,29 +145,31 @@ const Dashboard = () => {
       </div>
 
       {/* Tabla con usuarios filtrados */}
-      <div className="recent-users">
-        <h2>Usuarios según filtro</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Email</th>
-              <th>Rol</th>
-              <th>Organización</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers.map((u) => (
-              <tr key={u.id}>
-                <td>{u.name}</td>
-                <td>{u.email}</td>
-                <td>{u.role}</td>
-                <td>{u.organization}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+{/* Tabla con usuarios filtrados */}
+{/* Tabla con usuarios filtrados */}
+<div className="recent-users">
+  <h2>Usuarios</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Rol</th>
+        <th>Organización</th>
+      </tr>
+    </thead>
+    <tbody>
+      {filteredUsers.map((u) => (
+        <tr key={u.mail}>
+          <td>{u.first_name} {u.last_name}</td>
+          <td>{u.mail}</td>
+          <td>{u.roles?.[0]?.name || u.role}</td>
+          <td>{u.organization}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
     </div>
   );
 };
