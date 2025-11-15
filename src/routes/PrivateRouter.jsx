@@ -5,7 +5,6 @@ const PrivateRoute = ({ children }) => {
   const token = authService.getToken();
   const user = authService.getUser();
 
-  console.log({user})
   // Si no está logueado
   if (!token || !user) {
     return <Navigate to="/" replace />;

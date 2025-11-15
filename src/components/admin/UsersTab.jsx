@@ -8,6 +8,7 @@ import './usuarios.css';
 import UserFormModalContent from "./UserFormModalContent";
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
+import { useCheckToken } from "../hooks/checkToken";
 
 const UsersTab = () => {
   const [users, setUsers] = useState([])
@@ -17,7 +18,8 @@ const UsersTab = () => {
   const { showModal } = useContext(ModalContext);
   const activeRoles = localStorage.getItem("activeRoles");
   const userData = JSON.parse(localStorage.getItem("userData"))
-
+  const checkToken = useCheckToken();
+  
   useEffect(() => {
     const roles = JSON.parse(activeRoles);
     const loggedMail = userData.mail;
@@ -27,29 +29,34 @@ const UsersTab = () => {
     );
 
     const loadData = async () => {
-      try {
-        if (isAdmin) {
-          const [usersData, rolesData, organizationsData] = await Promise.all([
-            userService.getUsers(),
-            roleService.getRoles(),
-            organizationService.getOrganizations()
-          ]);
-
-          setUsers(usersData.filter(u => u.mail !== loggedMail));
-          setRoleOptions(rolesData.roles);
-          setOrganizationsOptions(organizationsData.organization_units);
-        } else {
-          const [usersData, rolesData] = await Promise.all([
-            userService.getUsersByOrganization(userData.organization),
-            roleService.getRolesByOrganization(userData.organization),
-          ]);
-
-          setUsers(usersData.filter(u => u.mail !== loggedMail));
-          setRoleOptions(rolesData.roles);
-          setOrganizationsOptions(undefined);
+      const validToken = checkToken()
+      if (validToken) {
+        try {
+          if (isAdmin) {
+            const [usersData, rolesData, organizationsData] = await Promise.all([
+              userService.getUsers(),
+              roleService.getRoles(),
+              organizationService.getOrganizations()
+            ]);
+  
+            setUsers(usersData.filter(u => u.mail !== loggedMail));
+            setRoleOptions(rolesData.roles);
+            setOrganizationsOptions(organizationsData.organization_units);
+          } else {
+            const [usersData, rolesData] = await Promise.all([
+              userService.getUsersByOrganization(userData.organization),
+              roleService.getRolesByOrganization(userData.organization),
+            ]);
+  
+            setUsers(usersData.filter(u => u.mail !== loggedMail));
+            setRoleOptions(rolesData.roles);
+            setOrganizationsOptions(undefined);
+          }
+        } catch (error) {
+          console.error("Error loading data:", error);
         }
-      } catch (error) {
-        console.error("Error loading data:", error);
+      } else {
+        console.log('No se pudo concretar la operación, el token es inválido')
       }
     };
 
@@ -70,15 +77,28 @@ const UsersTab = () => {
         />
       ),
       onAccept: async () => {
-        const created = await userService.createUser(tempUser);
-        if (created?.detail) {
-          let msg;
-          if (Array.isArray(created.detail)) {
-            msg = created.detail[0]?.msg;
-          } else {
-            msg = created.detail;
+        const tokenValid = checkToken()
+        if (tokenValid) {
+          const created = await userService.createUser(tempUser);
+          if (created?.detail) {
+            let msg;
+            if (Array.isArray(created.detail)) {
+              msg = created.detail[0]?.msg;
+            } else {
+              msg = created.detail;
+            }
+            toast.error(msg ?? "Error al crear usuario", {
+              position: "bottom-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              theme: "light",
+            })
+            return;
           }
-          toast.error(msg ?? "Error al crear usuario", {
+          toast.success("Usuario creado con éxito", {
             position: "bottom-right",
             autoClose: 3000,
             hideProgressBar: false,
@@ -87,18 +107,10 @@ const UsersTab = () => {
             draggable: true,
             theme: "light",
           })
-          return;
+          setUsers([...users, created]);
+        } else {
+          console.log('No se pudo concretar la operación, el token es invalido')
         }
-        toast.success("Usuario creado con éxito", {
-          position: "bottom-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          theme: "light",
-        })
-        setUsers([...users, created]);
       },
       cancelText: "Cancelar",
       acceptText: "Crear"
@@ -121,15 +133,28 @@ const UsersTab = () => {
         />
       ),
       onAccept: async () => {
-        const updatedUser = await userService.updateUser(tempUser);
-        if (updatedUser?.detail) {
-          let msg;
-          if (Array.isArray(updatedUser.detail)) {
-            msg = updatedUser.detail[0]?.msg;
-          } else {
-            msg = updatedUser.detail;
+        const tokenValid = checkToken()
+        if (tokenValid) {
+          const updatedUser = await userService.updateUser(tempUser);
+          if (updatedUser?.detail) {
+            let msg;
+            if (Array.isArray(updatedUser.detail)) {
+              msg = updatedUser.detail[0]?.msg;
+            } else {
+              msg = updatedUser.detail;
+            }
+            toast.error(msg ?? "Error al actualizar usuario", {
+              position: "bottom-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              theme: "light",
+            })
+            return;
           }
-          toast.error(msg ?? "Error al actualizar usuario", {
+          toast.success("Usuario actualizado con éxito", {
             position: "bottom-right",
             autoClose: 3000,
             hideProgressBar: false,
@@ -138,18 +163,10 @@ const UsersTab = () => {
             draggable: true,
             theme: "light",
           })
-          return;
+          setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
+        } else {
+          console.log('No se pudo concretar la operación, el token es invalido')
         }
-        toast.success("Usuario actualizado con éxito", {
-          position: "bottom-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          theme: "light",
-        })
-        setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
       },
       cancelText: "Cancelar",
       acceptText: "Guardar"
@@ -166,17 +183,22 @@ const UsersTab = () => {
         </div>
       ),
       onAccept: async () => {
-        await userService.deleteUser(user.mail);
-        toast.success("Usuario eliminado con éxito", {
-          position: "bottom-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          theme: "light",
-        })
-        setUsers(users.filter((u) => u.id !== user.id));
+        const tokenValid = checkToken()
+        if (tokenValid) {
+          await userService.deleteUser(user.mail);
+          toast.success("Usuario eliminado con éxito", {
+            position: "bottom-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "light",
+          })
+          setUsers(users.filter((u) => u.id !== user.id));
+        } else {
+          console.log('No se pudo concretar la operación, el token es invalido')
+        }
       },
       cancelText: "Cancelar",
       acceptText: "Eliminar"
@@ -194,7 +216,6 @@ const UsersTab = () => {
       <div className="users-wrapper">
         <UsersTable users={users} handleEdit={handleEdit} handleDelete={handleDelete} />
       </div>
-      <ToastContainer />
     </div>
   );
 };

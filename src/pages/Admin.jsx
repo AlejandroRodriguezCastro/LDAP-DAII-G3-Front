@@ -1,28 +1,18 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import "react-toastify/dist/ReactToastify.css";
 import RolesTab from "../components/admin/RolesTab";
 import UsersTab from "../components/admin/UsersTab.jsx";
-import { authService } from "../services/authService.js";
+import AdminHeader from "../components/AdminHeader.jsx";
 import "./admin.css";
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState("usuarios");
-  const navigate = useNavigate();
-  const currentUser = authService.getUser();
-
-  const handleLogout = () => {
-    authService.logout();
-    navigate("/");
-  };
+  const currentUser = JSON.parse(localStorage.getItem("userData"));
 
   return (
     <div className="admin-container">
-      <h1 className="admin-title">Administración de usuarios</h1>
-      
       <div style={{ textAlign: "right", marginBottom: "1rem" }}>
-        <button className="btn-small btn-delete" onClick={handleLogout}>
-          Cerrar sesión
-        </button>
+        <AdminHeader currentUser={currentUser} />
       </div>
 
       {/* Tabs Navigation */}
