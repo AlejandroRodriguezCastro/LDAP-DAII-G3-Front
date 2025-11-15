@@ -5,6 +5,8 @@ import ModalContext from "../context/ModalContext";
 import "./roles.css";
 import RolesTable from "./RolesTable";
 import RoleFormModalContent from "./RoleFormModalContent";
+import { useCheckToken } from "../hooks/checkToken";
+import { toast } from "react-toastify";
 
 const RolesTab = ({ currentUser }) => {
   const [roles, setRoles] = useState([]);
@@ -14,34 +16,39 @@ const RolesTab = ({ currentUser }) => {
   const { showModal } = useContext(ModalContext);
   const userData = JSON.parse(localStorage.getItem("userData"));
   const activeRoles = JSON.parse(localStorage.getItem("activeRoles"));
+  const checkToken = useCheckToken();
 
   useEffect(() => {
     const loadData = async () => {
-      try {
-
-        const adminCheck =
-          activeRoles?.some(
-            (role) => role.name.includes("super") && role.organization === "admin"
-          ) || false;
-        setIsAdmin(adminCheck);
-
-        if (adminCheck) {
-          // Admin: carga todos los roles y organizaciones
-          const [rolesData, organizationsData] = await Promise.all([
-            roleService.getRoles(),
-            organizationService.getOrganizations(),
-          ]);
-
-          setRoles((rolesData && rolesData.roles) || []);
-          setOrganizationsOptions(organizationsData.organization_units || []);
-        } else {
-          // Usuario normal: solo roles de su organización
-          const rolesData = await roleService.getRolesByOrganization(userData.organization);
-          setRoles((rolesData && rolesData.roles) || []);
-          setOrganizationsOptions(undefined);
+      const validToken = checkToken()
+      if (validToken) {
+        try {
+          const adminCheck =
+            activeRoles?.some(
+              (role) => role.name.includes("super") && role.organization === "admin"
+            ) || false;
+          setIsAdmin(adminCheck);
+  
+          if (adminCheck) {
+            // Admin: carga todos los roles y organizaciones
+            const [rolesData, organizationsData] = await Promise.all([
+              roleService.getRoles(),
+              organizationService.getOrganizations(),
+            ]);
+  
+            setRoles((rolesData && rolesData.roles) || []);
+            setOrganizationsOptions(organizationsData.organization_units || []);
+          } else {
+            // Usuario normal: solo roles de su organización
+            const rolesData = await roleService.getRolesByOrganization(userData.organization);
+            setRoles((rolesData && rolesData.roles) || []);
+            setOrganizationsOptions(undefined);
+          }
+        } catch (error) {
+          console.error("Error loading roles/organizations:", error);
         }
-      } catch (error) {
-        console.error("Error loading roles/organizations:", error);
+      } else {
+        console.log('No se pudo concretar la operación, el token es invalido')
       }
     };
 
@@ -63,21 +70,35 @@ const RolesTab = ({ currentUser }) => {
         />
       ),
       onAccept: async () => {
-        try {
-          await roleService.createRole({
-            ...tempRole,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          });
-
-          const userData = JSON.parse(localStorage.getItem("userData"));
-          const data = isAdmin
-            ? await roleService.getRoles()
-            : await roleService.getRolesByOrganization(userData.organization);
-
-          setRoles((data && data.roles) || []);
-        } catch (error) {
-          console.error("Error creating role:", error);
+        const tokenValid = checkToken()
+        if (tokenValid) {
+          try {
+            await roleService.createRole({
+              ...tempRole,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            });
+            toast.success("Rol creado con éxito", {
+              position: "bottom-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              theme: "light",
+            })
+  
+            const userData = JSON.parse(localStorage.getItem("userData"));
+            const data = isAdmin
+              ? await roleService.getRoles()
+              : await roleService.getRolesByOrganization(userData.organization);
+  
+            setRoles((data && data.roles) || []);
+          } catch (error) {
+            console.error("Error creating role:", error);
+          }
+        } else {
+          console.log('No se pudo concretar la operación, el token es invalido')
         }
       },
       showButtons: false
@@ -94,11 +115,25 @@ const RolesTab = ({ currentUser }) => {
         </div>
       ),
       onAccept: async () => {
-        try {
-          await roleService.deleteRole(role.id);
-          setRoles((prev) => prev.filter((r) => r.id !== role.id));
-        } catch (error) {
-          console.error("Error deleting role:", error);
+        const tokenValid = checkToken()
+        if (tokenValid) {
+          try {
+            await roleService.deleteRole(role.id);
+            toast.success("Rol eliminado con éxito", {
+              position: "bottom-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              theme: "light",
+            })
+            setRoles((prev) => prev.filter((r) => r.id !== role.id));
+          } catch (error) {
+            console.error("Error deleting role:", error);
+          }
+        } else {
+          console.log('No se pudo concretar la operación, el token es invalido')
         }
       },
       cancelText: "Cancelar",

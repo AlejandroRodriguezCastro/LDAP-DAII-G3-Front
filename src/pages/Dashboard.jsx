@@ -13,28 +13,27 @@ const Dashboard = () => {
   const [filterRole, setFilterRole] = useState("");
 
   const navigate = useNavigate();
-  const currentUser = authService.getUser();
 
-useEffect(() => {
-  const user = authService.getUser();
-  const hasSuperAccess = user?.roles?.some(role => 
-    role.includes("super_admin")
-  );
-  
-  if (!hasSuperAccess) {
-    navigate("/home");
-    return;
-  }
-  
-  userService.getUsers().then(users => {
-    console.log("🔍 ESTRUCTURA DE USUARIOS:", users);
-    if (users.length > 0) {
-      console.log("📋 Primer usuario:", users[0]);
-      console.log("🎯 Campos:", Object.keys(users[0]));
+  useEffect(() => {
+    const user = authService.getUser();
+    const hasSuperAccess = user?.roles?.some(role => 
+      role.includes("super_admin")
+    );
+    
+    if (!hasSuperAccess) {
+      navigate("/home");
+      return;
     }
-    setUsers(users);
-  });
-}, [currentUser, navigate]);
+
+    userService.getUsers().then(users => {
+      console.log("🔍 ESTRUCTURA DE USUARIOS:", users);
+      if (users.length > 0) {
+        console.log("📋 Primer usuario:", users[0]);
+        console.log("🎯 Campos:", Object.keys(users[0]));
+      }
+      setUsers(users);
+    });
+  }, []);
 
   // aplicar filtros dinámicos
   const filteredUsers = users.filter((u) => {
@@ -145,31 +144,29 @@ useEffect(() => {
       </div>
 
       {/* Tabla con usuarios filtrados */}
-{/* Tabla con usuarios filtrados */}
-{/* Tabla con usuarios filtrados */}
-<div className="recent-users">
-  <h2>Usuarios</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Email</th>
-        <th>Rol</th>
-        <th>Organización</th>
-      </tr>
-    </thead>
-    <tbody>
-      {filteredUsers.map((u) => (
-        <tr key={u.mail}>
-          <td>{u.first_name} {u.last_name}</td>
-          <td>{u.mail}</td>
-          <td>{u.roles?.[0]?.name || u.role}</td>
-          <td>{u.organization}</td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
+      <div className="recent-users">
+        <h2>Usuarios</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Rol</th>
+              <th>Organización</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredUsers.map((u) => (
+              <tr key={u.mail}>
+                <td>{u.first_name} {u.last_name}</td>
+                <td>{u.mail}</td>
+                <td>{u.roles?.[0]?.name || u.role}</td>
+                <td>{u.organization}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
