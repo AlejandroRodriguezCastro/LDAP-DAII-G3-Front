@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import RolesTab from "../components/admin/RolesTab";
 import UsersTab from "../components/admin/UsersTab.jsx";
+import Dashboard from "./Dashboard";
 import { authService } from "../services/authService.js";
 import "./admin.css";
 
@@ -9,6 +10,9 @@ const Admin = () => {
   const [activeTab, setActiveTab] = useState("usuarios");
   const navigate = useNavigate();
   const currentUser = authService.getUser();
+
+  // ✅ CONDICIÓN: Solo mostrar Dashboard para admin@citypass.com
+  const showDashboard = currentUser?.email === "admin@citypass.com";
 
   const handleLogout = () => {
     authService.logout();
@@ -39,12 +43,23 @@ const Admin = () => {
         >
           Roles
         </button>
+        
+        {/* ✅ SOLO MOSTRAR DASHBOARD SI showDashboard es true */}
+        {showDashboard && (
+          <button
+            className={`tab-button ${activeTab === "dashboard" ? "active" : ""}`}
+            onClick={() => setActiveTab("dashboard")}
+          >
+            Dashboard
+          </button>
+        )}
       </div>
 
       {/* Tabs Content */}
       <div className="tabs-content">
         {activeTab === "usuarios" && <UsersTab />}
         {activeTab === "roles" && <RolesTab currentUser={currentUser} />}
+        {activeTab === "dashboard" && showDashboard && <Dashboard />}
       </div>
     </div>
   );
