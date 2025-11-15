@@ -14,27 +14,13 @@ const AppRouter = () => (
       <Route path="/auth" element={<CallbackLogin />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
-
-      {/* Admin y Super entran */}
-      {/* <Route
-        path="/admin"
-        element={
-          <PrivateRoute role="admin">
-            <Admin />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/dashboard"
-        element={
-          <PrivateRoute role="super">
-            <Dashboard />
-          </PrivateRoute>
-        }
-      /> */}
       <Route
         path="/admin"      
-        element={<Admin />}
+        element={          
+          <PrivateRoute>
+            <Admin />          
+          </PrivateRoute>
+        }
       />
       {/* Pantalla normal */}
       <Route
