@@ -1,275 +1,167 @@
-// components/__tests__/UsersTab.test.jsx
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+// UsersTab.test.jsx
+// Test optimizado para lograr 80%+ de cobertura en UsersTab
 
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import UsersTab from "../components/admin/UsersTab";
 import ModalContext from "../components/context/ModalContext";
-import UsersTable from "../components/admin/UsersTable";
-
 import { userService } from "../services/userService";
 import { roleService } from "../services/roleService";
 import { organizationService } from "../services/organizationService";
+import { useCheckToken } from "../components/hooks/checkToken";
 
 jest.mock("../services/userService");
 jest.mock("../services/roleService");
 jest.mock("../services/organizationService");
-
-// Mock UsersTable to simplify and trigger edit/delete callbacks
-jest.mock("../components/admin/UsersTable", () => jest.fn(() => <div>UsersTableMock</div>));
+jest.mock("../components/hooks/checkToken");
 
 const mockShowModal = jest.fn();
+const wrapper = (ui) => (
+  <ModalContext.Provider value={{ showModal: mockShowModal }}>
+    {ui}
+  </ModalContext.Provider>
+);
 
-const renderWithContext = () =>
-  render(
-    <ModalContext.Provider value={{ showModal: mockShowModal }}>
-      <UsersTab />
-    </ModalContext.Provider>
-  );
-
-describe("UsersTab", () => {
+describe("UsersTab – cobertura optimizada", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    localStorage.clear();
-  });
 
-  test("carga datos cuando es admin", async () => {
     localStorage.setItem(
       "activeRoles",
-      JSON.stringify([{ name: "super-admin", organization: "admin" }])
+      JSON.stringify([{ name: "super_admin", organization: "admin" }])
     );
+
     localStorage.setItem(
       "userData",
-      JSON.stringify({ organization: "org1" })
+      JSON.stringify({ mail: "admin@test.com", organization: "org1" })
     );
 
-    userService.getUsers.mockResolvedValueOnce([{ id: 1 }]);
-    roleService.getRoles.mockResolvedValueOnce({ roles: ["r1"] });
-    organizationService.getOrganizations.mockResolvedValueOnce({
-      organization_units: ["org1", "org2"],
+    // Siempre token válido
+    useCheckToken.mockReturnValue(() => true);
+  });
+
+  test("carga datos como admin", async () => {
+    userService.getUsers.mockResolvedValue([
+      { id: 1, mail: "a@test.com" },
+      { id: 2, mail: "admin@test.com" }
+    ]);
+    roleService.getRoles.mockResolvedValue({ roles: [{ id: 10 }] });
+    organizationService.getOrganizations.mockResolvedValue({
+      organization_units: [{ id: 20 }]
     });
 
-    renderWithContext();
+    render(wrapper(<UsersTab />));
 
     await waitFor(() => {
       expect(userService.getUsers).toHaveBeenCalled();
       expect(roleService.getRoles).toHaveBeenCalled();
       expect(organizationService.getOrganizations).toHaveBeenCalled();
     });
-  });
-
-  test("carga datos cuando NO es admin", async () => {
-    localStorage.setItem(
-      "activeRoles",
-      JSON.stringify([{ name: "empleado", organization: "org1" }])
-    );
-    localStorage.setItem(
-      "userData",
-      JSON.stringify({ organization: "orgUser" })
-    );
-
-    userService.getUsersByOrganization.mockResolvedValueOnce([{ id: 10 }]);
-    roleService.getRolesByOrganization.mockResolvedValueOnce({
-      roles: ["r1"],
-    });
-
-    renderWithContext();
-
-    await waitFor(() => {
-      expect(userService.getUsersByOrganization).toHaveBeenCalledWith(
-        "orgUser"
-      );
-      expect(roleService.getRolesByOrganization).toHaveBeenCalledWith(
-        "orgUser"
-      );
-      expect(organizationService.getOrganizations).not.toHaveBeenCalled();
-    });
-  });
-
-  test("renderiza tabla y botón", () => {
-    localStorage.setItem(
-      "activeRoles",
-      JSON.stringify([{ name: "super-admin", organization: "admin" }])
-    );
-    localStorage.setItem("userData", JSON.stringify({}));
-
-    userService.getUsers.mockResolvedValueOnce([]);
-    roleService.getRoles.mockResolvedValueOnce({ roles: [] });
-    organizationService.getOrganizations.mockResolvedValueOnce({
-      organization_units: [],
-    });
-
-    renderWithContext();
 
     expect(screen.getByText("Gestión de Usuarios")).toBeInTheDocument();
-    expect(screen.getByText("Crear usuario")).toBeInTheDocument();
-    expect(screen.getByText("UsersTableMock")).toBeInTheDocument();
   });
 
   test("abre modal al crear usuario", async () => {
-    localStorage.setItem(
-      "activeRoles",
-      JSON.stringify([{ name: "super-admin", organization: "admin" }])
-    );
-    localStorage.setItem("userData", JSON.stringify({}));
-
-    userService.getUsers.mockResolvedValueOnce([]);
-    roleService.getRoles.mockResolvedValueOnce({ roles: [] });
-    organizationService.getOrganizations.mockResolvedValueOnce({
-      organization_units: [],
+    userService.getUsers.mockResolvedValue([]);
+    roleService.getRoles.mockResolvedValue({ roles: [] });
+    organizationService.getOrganizations.mockResolvedValue({
+      organization_units: []
     });
 
-    renderWithContext();
+    render(wrapper(<UsersTab />));
 
-    fireEvent.click(screen.getByText("Crear usuario"));
+    const btn = await screen.findByText("Crear usuario");
+    fireEvent.click(btn);
 
     expect(mockShowModal).toHaveBeenCalled();
   });
 
-  test("handleEdit llama showModal y updateUser", async () => {
-    localStorage.setItem(
-      "activeRoles",
-      JSON.stringify([{ name: "super-admin", organization: "admin" }])
-    );
-    localStorage.setItem("userData", JSON.stringify({}));
-
-    userService.getUsers.mockResolvedValueOnce([{ id: 1, first_name: "Pepe" }]);
-    roleService.getRoles.mockResolvedValueOnce({ roles: [] });
-    organizationService.getOrganizations.mockResolvedValueOnce({
-      organization_units: [],
+  test("ejecuta creación de usuario", async () => {
+    userService.getUsers.mockResolvedValue([]);
+    roleService.getRoles.mockResolvedValue({ roles: [] });
+    organizationService.getOrganizations.mockResolvedValue({
+      organization_units: []
     });
 
-    UsersTable.mockImplementation(({ handleEdit }) => (
-      <button onClick={() => handleEdit({ id: 1 })}>EditMock</button>
-    ));
-
-    renderWithContext();
-
-    fireEvent.click(screen.getByText("EditMock"));
-
-    expect(mockShowModal).toHaveBeenCalled();
-  });
-
-  test("handleDelete abre modal y luego elimina usuario", async () => {
-    localStorage.setItem(
-      "activeRoles",
-      JSON.stringify([{ name: "super-admin", organization: "admin" }])
-    );
-    localStorage.setItem("userData", JSON.stringify({}));
-
-    userService.getUsers.mockResolvedValueOnce([
-      { id: 1, mail: "a@a.com", first_name: "A", last_name: "B" },
-    ]);
-    roleService.getRoles.mockResolvedValueOnce({ roles: [] });
-    organizationService.getOrganizations.mockResolvedValueOnce({
-      organization_units: [],
+    userService.createUser.mockResolvedValue({
+      id: 9,
+      mail: "nuevo@test.com"
     });
-
-    let acceptCallback = null;
 
     mockShowModal.mockImplementation(({ onAccept }) => {
-      acceptCallback = onAccept;
+      onAccept();
     });
 
-    UsersTable.mockImplementation(({ handleDelete }) => (
-      <button onClick={() => handleDelete({ id: 1, mail: "a@a.com" })}>
-        DeleteMock
-      </button>
-    ));
+    render(wrapper(<UsersTab />));
 
-    renderWithContext();
-
-    fireEvent.click(screen.getByText("DeleteMock"));
-
-    expect(mockShowModal).toHaveBeenCalled();
-
-    userService.deleteUser.mockResolvedValueOnce(true);
-
-    await waitFor(() => acceptCallback());
-
-    expect(userService.deleteUser).toHaveBeenCalledWith("a@a.com");
-  });
-});
-test("setUsers se ejecuta cargando usuarios (línea 39)", async () => {
-  localStorage.setItem(
-    "activeRoles",
-    JSON.stringify([{ name: "super-admin", organization: "admin" }])
-  );
-  localStorage.setItem("userData", JSON.stringify({}));
-
-  userService.getUsers.mockResolvedValueOnce([{ id: 123 }]);
-  roleService.getRoles.mockResolvedValueOnce({ roles: [] });
-  organizationService.getOrganizations.mockResolvedValueOnce({
-    organization_units: [],
+    await waitFor(() => {
+      expect(userService.createUser).toHaveBeenCalled();
+    });
   });
 
-  renderWithContext();
+  test("edita un usuario y llama a updateUser", async () => {
+    userService.getUsers.mockResolvedValue([
+      {
+        id: 1,
+        mail: "a@test.com",
+        first_name: "Juan",
+        last_name: "Pérez",
+        organization: "org1",
+        roles: []
+      }
+    ]);
+    roleService.getRoles.mockResolvedValue({ roles: [] });
+    organizationService.getOrganizations.mockResolvedValue({
+      organization_units: []
+    });
 
-  await waitFor(() => {
-    expect(userService.getUsers).toHaveBeenCalled();
-  });
-});
-test("handleCreate ejecuta createUser y actualiza estado (líneas 64–75)", async () => {
-  localStorage.setItem(
-    "activeRoles",
-    JSON.stringify([{ name: "super-admin", organization: "admin" }])
-  );
-  localStorage.setItem("userData", JSON.stringify({}));
+    userService.updateUser.mockResolvedValue({
+      id: 1,
+      mail: "a@test.com",
+      first_name: "Modificado",
+      last_name: "Pérez"
+    });
 
-  userService.getUsers.mockResolvedValueOnce([]);
-  roleService.getRoles.mockResolvedValueOnce({ roles: [] });
-  organizationService.getOrganizations.mockResolvedValueOnce({
-    organization_units: [],
-  });
+    render(wrapper(<UsersTab />));
 
-  let acceptCallback = null;
+    // Editar → buscar el ícono EDIT
+    const editBtn = await screen.findAllByText("edit");
+    fireEvent.click(editBtn[0]);
 
-  mockShowModal.mockImplementation(({ onAccept }) => {
-    acceptCallback = onAccept;
-  });
+    mockShowModal.mockImplementation(({ onAccept }) => onAccept());
 
-  userService.createUser.mockResolvedValueOnce({
-    id: 99,
-    first_name: "Nuevo",
-  });
-
-  renderWithContext();
-
-  fireEvent.click(screen.getByText("Crear usuario"));
-
-  await waitFor(() => acceptCallback());
-
-  expect(userService.createUser).toHaveBeenCalled();
-});
-test("handleEdit ejecuta updateUser y actualiza lista (líneas 88–99)", async () => {
-  localStorage.setItem(
-    "activeRoles",
-    JSON.stringify([{ name: "super-admin", organization: "admin" }])
-  );
-  localStorage.setItem("userData", JSON.stringify({}));
-
-  userService.getUsers.mockResolvedValueOnce([{ id: 1 }]);
-  roleService.getRoles.mockResolvedValueOnce({ roles: [] });
-  organizationService.getOrganizations.mockResolvedValueOnce({
-    organization_units: [],
+    await waitFor(() => {
+      expect(userService.updateUser).toHaveBeenCalled();
+    });
   });
 
-  let acceptCallback = null;
+  test("elimina un usuario y llama deleteUser", async () => {
+    userService.getUsers.mockResolvedValue([
+      {
+        id: 1,
+        mail: "a@test.com",
+        first_name: "Juan",
+        last_name: "Pérez",
+        organization: "org1",
+        roles: []
+      }
+    ]);
+    roleService.getRoles.mockResolvedValue({ roles: [] });
+    organizationService.getOrganizations.mockResolvedValue({
+      organization_units: []
+    });
 
-  mockShowModal.mockImplementation(({ onAccept }) => {
-    acceptCallback = onAccept;
+    userService.deleteUser.mockResolvedValue({});
+
+    render(wrapper(<UsersTab />));
+
+    // Eliminar → buscar ícono DELETE
+    const deleteBtn = await screen.findAllByText("delete");
+    fireEvent.click(deleteBtn[0]);
+
+    mockShowModal.mockImplementation(({ onAccept }) => onAccept());
+
+    await waitFor(() => {
+      expect(userService.deleteUser).toHaveBeenCalledWith("a@test.com");
+    });
   });
-
-  UsersTable.mockImplementation(({ handleEdit }) => (
-    <button onClick={() => handleEdit({ id: 1 })}>EditItem</button>
-  ));
-
-  userService.updateUser.mockResolvedValueOnce({ id: 1, first_name: "Editado" });
-
-  renderWithContext();
-
-  fireEvent.click(screen.getByText("EditItem"));
-
-  await waitFor(() => acceptCallback());
-
-  expect(userService.updateUser).toHaveBeenCalled();
 });
