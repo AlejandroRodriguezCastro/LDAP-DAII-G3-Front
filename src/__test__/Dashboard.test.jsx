@@ -3,6 +3,7 @@ import { BrowserRouter } from "react-router-dom";
 import Dashboard from "../pages/Dashboard";
 import { userService } from "../services/userService";
 import { authService } from "../services/authService";
+import { MemoryRouter } from "react-router-dom";
 
 jest.mock("../services/userService.js", () => ({
   userService: { getUsers: jest.fn() },
@@ -112,4 +113,35 @@ describe("Dashboard Page", () => {
 
     expect(strongZeroErr).toBeInTheDocument();
   });
+it("cubre la rama de super_admin y carga usuarios", async () => {
+  const mockUsers = [
+    {
+      first_name: "John",
+      last_name: "Doe",
+      mail: "john@example.com",
+      organization: "OrgA",
+      roles: [{ name: "admin" }]
+    }
+  ];
+
+  authService.getUser = jest.fn().mockReturnValue({
+    roles: ["super_admin"]
+  });
+
+  userService.getUsers = jest.fn().mockResolvedValue(mockUsers);
+
+  render(
+    <MemoryRouter>
+      <Dashboard />
+    </MemoryRouter>
+  );
+
+  // Esperar a que cargue la tabla
+  const row = await screen.findByText("john@example.com");
+  expect(row).toBeInTheDocument();
+
+  expect(userService.getUsers).toHaveBeenCalled();
+});
+
+
 });
