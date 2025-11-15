@@ -11,8 +11,6 @@ const AdminHeader = ({currentUser}) => {
     navigate("/");
   };
 
-  console.log('currentUser', currentUser)
-
   return (
     <div className="admin-header">
       <h1 className="admin-title">Administración LDAP</h1>
