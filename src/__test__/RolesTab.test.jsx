@@ -7,14 +7,25 @@ import ModalContext from "../components/context/ModalContext";
 
 import { roleService } from "../services/roleService";
 import { organizationService } from "../services/organizationService";
+import { useCheckToken } from "../components/hooks/checkToken";
 
 // Mocks
-jest.mock("../services/roleService");
+jest.mock("../services/roleService", () => ({
+  roleService: {
+    getRoles: jest.fn(),
+    getRolesByOrganization: jest.fn(),
+    createRole: jest.fn(),
+    deleteRole: jest.fn(),
+  },
+}));
+
 jest.mock("../services/organizationService", () => ({
   organizationService: {
     getOrganizations: jest.fn(),
   },
 }));
+
+jest.mock("../components/hooks/checkToken");
 
 jest.mock("../components/admin/RoleFormModalContent", () => {
   return function MockRoleFormModalContent({ title, role, onChange }) {
@@ -84,6 +95,8 @@ describe("RolesTab", () => {
     });
 
     roleService.getRoles.mockResolvedValue({ roles: [] });
+    // always return a valid token check in tests
+    useCheckToken.mockReturnValue(() => true);
   });
 
   test("renders RolesTab component with header and button", () => {
