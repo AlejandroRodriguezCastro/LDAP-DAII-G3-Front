@@ -6,6 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import FormInput from "../components/FormInput.jsx";
 import Button from "../components/Button.jsx";
 import AuthLayout from "../components/AuthLayout.jsx";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 import "./auth.css";
 import { authService } from "../services/authService.js";
 
@@ -20,6 +21,7 @@ const schema = yup.object({
 const Login = () => {
   const navigate = useNavigate();
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -58,15 +60,49 @@ const Login = () => {
           register={register("email")}
           error={errors.email}
         />
+        {/* Input Password with visibility toggle inside the input */}
+        <div className="form-group">
+          <label htmlFor="password">Contraseña</label>
+          <div style={{ position: "relative" }}>
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              {...register("password")}
+              aria-invalid={errors.password ? "true" : "false"}
+              className="form-control"
+              style={{ paddingRight: "2.5rem" }}
+            />
 
-        {/* Input Password */}
-        <FormInput
-          id="password"
-          label="Contraseña"
-          type="password"
-          register={register("password")}
-          error={errors.password}
-        />
+            <button
+              type="button"
+              onClick={() => setShowPassword((s) => !s)}
+              aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+              className="password-toggle"
+              style={{
+                position: "absolute",
+                right: "0.5rem",
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "transparent",
+                border: "none",
+                padding: 0,
+                margin: 0,
+                cursor: "pointer",
+                lineHeight: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+            </button>
+          </div>
+          {errors.password && (
+            <p className="error-text" role="alert">
+              {errors.password.message}
+            </p>
+          )}
+        </div>
 
         {/* Error global */}
         {error && (
