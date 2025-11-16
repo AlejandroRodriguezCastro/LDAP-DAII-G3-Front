@@ -35,7 +35,7 @@ describe("Login Page", () => {
       </BrowserRouter>
     );
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/contraseña/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/contraseña/i, { selector: 'input' })).toBeInTheDocument();
   });
 
   it("muestra error si credenciales inválidas", async () => {
@@ -47,7 +47,7 @@ describe("Login Page", () => {
     );
 
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "bad@test.com" } });
-    fireEvent.change(screen.getByLabelText(/contraseña/i), { target: { value: "wrong" } });
+    fireEvent.change(screen.getByLabelText(/contraseña/i, { selector: 'input' }), { target: { value: "wrong" } });
     fireEvent.click(screen.getByRole("button", { name: /iniciar sesión/i }));
 
     expect(await screen.findByText(/credenciales inválidas/i)).toBeInTheDocument();
