@@ -84,6 +84,26 @@ export const authService = {
     return { success: true };
   },
 
+  resetPassword: async (token, password) => {
+    try {
+      const response = await fetch(`${API_URL}/v1/auth/reset`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.message || 'No se pudo restablecer la contraseña');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error en resetPassword:', error);
+      throw error;
+    }
+  },
+
   logout: () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("user");
