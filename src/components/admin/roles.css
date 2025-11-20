@@ -20,7 +20,7 @@
 
 /* Botón principal */
 .btn-primary {
-  background-color: #4f46e5;
+  background-color: #04BF8A;
   color: white;
   padding: 0.75rem 1.5rem;
   border: none;
@@ -32,7 +32,7 @@
 }
 
 .btn-primary:hover {
-  background-color: #4338ca;
+  background-color: #03a64a;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
 }

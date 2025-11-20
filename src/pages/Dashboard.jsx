@@ -4,6 +4,7 @@ import { userService } from "../services/userService.js";
 import { authService } from "../services/authService.js";
 import { useNavigate } from "react-router-dom";
 import "./dashboard.css";
+import Loading from "../components/Loading/Loading.jsx";
 
 const COLORS = [  "#4f46e5", "#16a34a", "#dc2626", "#f59e0b", "#0ea5e9",
   "#8b5cf6", "#ec4899", "#10b981", "#f97316", "#06b6d4",
@@ -15,6 +16,7 @@ const Dashboard = () => {
   const [users, setUsers] = useState([]);
   const [filterOrg, setFilterOrg] = useState("");
   const [filterRole, setFilterRole] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
 
@@ -28,7 +30,7 @@ const Dashboard = () => {
       navigate("/home");
       return;
     }
-
+    setLoading(true);
     userService.getUsers().then(users => {
       console.log("🔍 ESTRUCTURA DE USUARIOS:", users);
       if (users.length > 0) {
@@ -36,6 +38,10 @@ const Dashboard = () => {
         console.log("🎯 Campos:", Object.keys(users[0]));
       }
       setUsers(users);
+    })
+    .finally(() => {
+      // ← desactivar loading cuando termine
+      setLoading(false);
     });
   }, []);
 
@@ -223,6 +229,7 @@ const Dashboard = () => {
         </p>
       </div>
 
+      { loading ? <Loading type="spinner" /> : <>
       {/* Gráficos - NUEVO LAYOUT */}
       <div className="charts-grid">
         {/* Columna 1: Gráficos circulares */}
@@ -356,30 +363,31 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Tabla con usuarios filtrados */}
-      <div className="recent-users">
-        <h2>Usuarios</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Email</th>
-              <th>Rol</th>
-              <th>Organización</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers.map((u) => (
-              <tr key={u.mail}>
-                <td>{u.first_name} {u.last_name}</td>
-                <td>{u.mail}</td>
-                <td>{u.roles?.[0]?.name || u.role}</td>
-                <td>{u.organization}</td>
+        {/* Tabla con usuarios filtrados */}
+        {<div className="recent-users">
+          <h2>Usuarios</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>Organización</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {filteredUsers.map((u) => (
+                <tr key={u.mail}>
+                  <td>{u.first_name} {u.last_name}</td>
+                  <td>{u.mail}</td>
+                  <td>{u.roles?.[0]?.name || u.role}</td>
+                  <td>{u.organization}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>}
+      </>}
     </div>
   );
 };
