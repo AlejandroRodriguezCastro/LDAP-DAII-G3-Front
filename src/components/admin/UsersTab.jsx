@@ -9,12 +9,14 @@ import UserFormModalContent from "./UserFormModalContent";
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { useCheckToken } from "../hooks/checkToken";
+import Loading from "../Loading/Loading";
 
 const UsersTab = () => {
   const [users, setUsers] = useState([])
   const [roleOptions, setRoleOptions] = useState([])
   const [organizationsOptions, setOrganizationsOptions] = useState([])
   const [newUser, setNewUser] = useState({ first_name: "", last_name: "", mail: "", roles: null, organization: "", is_active: true })
+  const [loading, setLoading] = useState(true);
   const { showModal } = useContext(ModalContext);
   const activeRoles = localStorage.getItem("activeRoles");
   const userData = JSON.parse(localStorage.getItem("userData"))
@@ -27,8 +29,9 @@ const UsersTab = () => {
     const isAdmin = roles.some(role =>
       role.name.includes("super") && role.organization === "admin"
     );
-
+  
     const loadData = async () => {
+      setLoading(true);
       const validToken = checkToken()
       if (validToken) {
         try {
@@ -55,6 +58,7 @@ const UsersTab = () => {
         } catch (error) {
           console.error("Error loading data:", error);
         }
+        setLoading(false);
       } else {
         console.log('No se pudo concretar la operación, el token es inválido')
       }
@@ -213,9 +217,9 @@ const UsersTab = () => {
           Crear usuario
         </button>
       </div>
-      <div className="users-wrapper">
+      { loading ? <Loading type="bar" /> : <div className="users-wrapper">
         <UsersTable users={users} handleEdit={handleEdit} handleDelete={handleDelete} />
-      </div>
+      </div>}
     </div>
   );
 };

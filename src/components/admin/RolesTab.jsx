@@ -7,6 +7,7 @@ import RolesTable from "./RolesTable";
 import RoleFormModalContent from "./RoleFormModalContent";
 import { useCheckToken } from "../hooks/checkToken";
 import { toast } from "react-toastify";
+import Loading from "../Loading/Loading";
 
 const RolesTab = ({ currentUser }) => {
   const [roles, setRoles] = useState([]);
@@ -17,9 +18,11 @@ const RolesTab = ({ currentUser }) => {
   const userData = JSON.parse(localStorage.getItem("userData"));
   const activeRoles = JSON.parse(localStorage.getItem("activeRoles"));
   const checkToken = useCheckToken();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
+      setLoading(true);
       const validToken = checkToken()
       if (validToken) {
         try {
@@ -47,6 +50,7 @@ const RolesTab = ({ currentUser }) => {
         } catch (error) {
           console.error("Error loading roles/organizations:", error);
         }
+        setLoading(false);
       } else {
         console.log('No se pudo concretar la operación, el token es invalido')
       }
@@ -154,9 +158,9 @@ const RolesTab = ({ currentUser }) => {
         </button>
       </div>
 
-      <div className="users-wrapper">
+      { loading ? <Loading type="bar" /> : <div className="users-wrapper">
         <RolesTable roles={roles} handleDelete={handleDelete} />
-      </div>
+      </div>}
     </div>
   );
 };
