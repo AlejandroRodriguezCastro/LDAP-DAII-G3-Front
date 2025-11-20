@@ -16,6 +16,7 @@ const UsersTab = () => {
   const [roleOptions, setRoleOptions] = useState([])
   const [organizationsOptions, setOrganizationsOptions] = useState([])
   const [newUser, setNewUser] = useState({ first_name: "", last_name: "", mail: "", roles: null, organization: "", is_active: true })
+  const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(true);
   const { showModal } = useContext(ModalContext);
   const activeRoles = localStorage.getItem("activeRoles");
@@ -29,6 +30,7 @@ const UsersTab = () => {
     const isAdmin = roles.some(role =>
       role.name.includes("super") && role.organization === "admin"
     );
+    setIsAdmin(isAdmin)
   
     const loadData = async () => {
       setLoading(true);
@@ -259,7 +261,7 @@ const UsersTab = () => {
         </button>
       </div>
       { loading ? <Loading type="bar" /> : <div className="users-wrapper">
-        <UsersTable users={users} handleEdit={handleEdit} handleDelete={handleDelete} />
+        <UsersTable users={users} handleEdit={handleEdit} handleDelete={handleDelete} roleOptions={roleOptions} organizationsOptions={organizationsOptions} isAdmin={isAdmin} />
       </div>}
     </div>
   );
