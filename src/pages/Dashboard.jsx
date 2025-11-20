@@ -108,7 +108,7 @@ const Dashboard = () => {
         <div className="charts-grid">
           <div className="chart-box">
             <h2>Usuarios por Organización</h2>
-            <PieChart width={400} height={300}>
+            <PieChart width={550} height={400}>
               <Pie
                 data={orgData}
                 cx="50%"
@@ -130,7 +130,7 @@ const Dashboard = () => {
 
           <div className="chart-box">
             <h2>Usuarios por Rol</h2>
-            <PieChart width={400} height={300}>
+            <PieChart width={550} height={400}>
               <Pie
                 data={roleData}
                 cx="50%"
