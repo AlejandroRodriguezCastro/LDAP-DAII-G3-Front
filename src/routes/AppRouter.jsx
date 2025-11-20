@@ -3,6 +3,7 @@ import Login from "../pages/Login";
 import CallbackLogin from "../pages/CallbackLogin";
 import Register from "../pages/Register";
 import ForgotPassword from "../pages/ForgotPassword";
+import ResetPassword from "../pages/ResetPassword";
 import Admin from "../pages/Admin";
 import Dashboard from "../pages/Dashboard";
 import PrivateRoute from "./PrivateRouter";
@@ -14,6 +15,7 @@ const AppRouter = () => (
       <Route path="/auth" element={<CallbackLogin />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route
         path="/admin"      
         element={          

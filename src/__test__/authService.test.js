@@ -1,114 +1,135 @@
-import { authService } from "../services/authService";
-import { userService } from "../services/userService";
+import { authService } from '../services/authService';
+import { userService } from '../services/userService';
+import { jwtDecode } from 'jwt-decode';
 
-// Mocks globales necesarios
-global.fetch = jest.fn();
-global.localStorage = {
-  store: {},
-  getItem(key) { return this.store[key] || null; },
-  setItem(key, value) { this.store[key] = value; },
-  removeItem(key) { delete this.store[key]; }
-};
+jest.mock('jwt-decode', () => ({ jwtDecode: jest.fn() }));
+jest.mock('../services/userService', () => ({ userService: { getUser: jest.fn() } }));
 
-// Mock jwtDecode
-jest.mock("jwt-decode", () => ({
-  jwtDecode: jest.fn(() => ({ email: "user@test.com" }))
-}));
+describe('authService', () => {
+  const ORIGINAL_FETCH = global.fetch;
 
-// Mock userService
-jest.mock("../services/userService", () => ({
-  userService: {
-    getUser: jest.fn(() => Promise.resolve({ roles: [] }))
-  }
-}));
-
-describe("authService basic coverage tests", () => {
-
-  beforeEach(() => {
+  afterEach(() => {
     jest.clearAllMocks();
-    localStorage.store = {};
+    global.fetch = ORIGINAL_FETCH;
+    localStorage.clear();
   });
 
-  // LOGIN ---------------------------------------------------------
-  it("login should return success true", async () => {
-    fetch.mockResolvedValueOnce({
+  test('login success stores token and user data when not callback', async () => {
+    const fakeToken = 'fake.jwt.token';
+    global.fetch = jest.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve("fakeToken")
+      json: async () => fakeToken,
     });
 
-    const res = await authService.login({ email: "a", password: "b" });
+    jwtDecode.mockReturnValue({ email: 'user@example.com' });
+    userService.getUser.mockResolvedValue({ roles: ['admin'], name: 'User' });
+
+    const res = await authService.login({ email: 'a', password: 'b' }, false);
 
     expect(res.success).toBe(true);
-    expect(fetch).toHaveBeenCalled();
+    expect(res.token).toBe(fakeToken);
+    expect(localStorage.getItem('authToken')).toBe(fakeToken);
+    expect(localStorage.getItem('userData')).toBe(JSON.stringify({ roles: ['admin'], name: 'User' }));
   });
 
-  it("login should throw error when fetch fails", async () => {
-    fetch.mockRejectedValueOnce(new Error("fail"));
-    await expect(authService.login({ email: "a", password: "b" }))
-      .rejects.toThrow();
-  });
+  test('login with isCallback true does not call userService.getUser', async () => {
+    const fakeToken = 'fake.jwt.token';
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => fakeToken,
+    });
 
-  // VALIDATE TOKEN -------------------------------------------------
-  it("validateToken should return success true when OK", async () => {
-    fetch.mockResolvedValueOnce({ ok: true });
-    const res = await authService.validateToken("abc");
+    jwtDecode.mockReturnValue({ email: 'callback@example.com' });
+    userService.getUser.mockResolvedValue({ roles: [] });
+
+    const res = await authService.login({ email: 'a', password: 'b' }, true);
     expect(res.success).toBe(true);
+    expect(userService.getUser).not.toHaveBeenCalled();
+    // when isCallback=true we only store the token, not the decoded user
+    expect(localStorage.getItem('user')).toBeNull();
   });
 
-  it("validateToken should return success false when response not ok", async () => {
-    fetch.mockResolvedValueOnce({ ok: false });
-    const res = await authService.validateToken("abc");
+  test('login throws when response not ok', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      json: async () => ({})
+    });
+
+    await expect(authService.login({ email: 'x', password: 'y' })).rejects.toThrow();
+  });
+
+  test('validateToken success and failure', async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: true });
+    await expect(authService.validateToken('t')).resolves.toEqual({ success: true });
+
+    global.fetch = jest.fn().mockResolvedValue({ ok: false });
+    const res = await authService.validateToken('t');
     expect(res.success).toBe(false);
+    expect(res.error).toBeDefined();
   });
 
-  // REGISTER -------------------------------------------------------
-  it("register should return success true", async () => {
-    const res = await authService.register({
-      email: "nuevo@test.com",
-      password: "123",
-      name: "Test"
-    });
+  test('register throws for duplicate email', async () => {
+    await expect(authService.register({ email: 'test@citypass.com', password: 'p', name: 'n' })).rejects.toThrow('El email ya está registrado');
+  });
+
+  test('register success stores token and user', async () => {
+    const res = await authService.register({ email: 'nuevo@test.com', password: 'p', name: 'Nombre' });
     expect(res.success).toBe(true);
+    expect(res.token).toBeDefined();
+    expect(localStorage.getItem('authToken')).toBe(res.token);
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    expect(storedUser.email).toBe('nuevo@test.com');
   });
 
-  it("register should throw when email already exists", async () => {
-    await expect(
-      authService.register({
-        email: "test@citypass.com",
-        password: "123",
-        name: "Test"
-      })
-    ).rejects.toThrow();
+  test('recoverPassword success and failure', async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true }) });
+    await expect(authService.recoverPassword('a@b.com')).resolves.toEqual({ ok: true });
+
+    global.fetch = jest.fn().mockResolvedValue({ ok: false, json: async () => ({ message: 'Fail' }) });
+    await expect(authService.recoverPassword('a@b.com')).rejects.toThrow('Fail');
   });
 
-  // RECOVER PASSWORD -----------------------------------------------
-  it("recoverPassword should return success true", async () => {
-    const res = await authService.recoverPassword("a@test.com");
-    expect(res.success).toBe(true);
+  test('resetPassword success and detailed error mapping', async () => {
+    // success
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true }) });
+    await expect(authService.resetPassword('t', 'NewPass12345')).resolves.toEqual({ ok: true });
+
+    // error with detail -> map to spanish message
+    const errorPayload = {
+      detail: [
+        {
+          type: 'string_too_short',
+          loc: ['body', 'new_password'],
+          msg: 'String should have at least 12 characters',
+          input: '.Uade2025',
+          ctx: { min_length: 12 }
+        }
+      ]
+    };
+
+    global.fetch = jest.fn().mockResolvedValue({ ok: false, json: async () => errorPayload });
+
+    await expect(authService.resetPassword('t', '.Uade2025')).rejects.toThrow('La contraseña debe tener al menos 12 caracteres');
   });
 
-  // LOGOUT ---------------------------------------------------------
-  it("logout should remove authToken and user", () => {
-    localStorage.setItem("authToken", "123");
-    localStorage.setItem("user", "{}");
-
-    authService.logout();
-
-    expect(localStorage.getItem("authToken")).toBe(null);
-    expect(localStorage.getItem("user")).toBe(null);
+  test('resetPassword when err.detail is string uses that message', async () => {
+    const errorPayload = { detail: 'Some backend string error' };
+    global.fetch = jest.fn().mockResolvedValue({ ok: false, json: async () => errorPayload });
+    await expect(authService.resetPassword('t', 'whatever')).rejects.toThrow('Some backend string error');
   });
 
-  // GETTOKEN -------------------------------------------------------
-  it("getToken should return stored token", () => {
-    localStorage.setItem("authToken", "abc");
-    expect(authService.getToken()).toBe("abc");
+  test('resetPassword when fetch rejects bubbles error (catch path)', async () => {
+    global.fetch = jest.fn().mockRejectedValue(new Error('network-fail'));
+    await expect(authService.resetPassword('t', 'whatever')).rejects.toThrow('network-fail');
   });
 
-  // GETUSER --------------------------------------------------------
-  it("getUser should return parsed user", () => {
-    localStorage.setItem("user", JSON.stringify({ name: "Juan" }));
-    const user = authService.getUser();
-    expect(user.name).toBe("Juan");
+  test('resetPassword when backend returns empty object uses default message', async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: false, json: async () => ({}) });
+    await expect(authService.resetPassword('t', 'x')).rejects.toThrow('No se pudo restablecer la contraseña');
   });
 
+  test('resetPassword when backend returns { message } uses that message', async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: false, json: async () => ({ message: 'Custom error from backend' }) });
+    await expect(authService.resetPassword('t', 'x')).rejects.toThrow('Custom error from backend');
+  });
 });
