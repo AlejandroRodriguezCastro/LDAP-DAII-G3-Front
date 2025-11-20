@@ -308,4 +308,5 @@ describe("userService", () => {
     
     await expect(userService.deleteUser("test@test.com")).rejects.toThrow("Network error");
   });
+  
 });

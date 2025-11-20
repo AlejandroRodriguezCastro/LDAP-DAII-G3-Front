@@ -132,42 +132,83 @@ const UsersTab = () => {
           organizations={organizationsOptions}
         />
       ),
-      onAccept: async () => {
-        const tokenValid = checkToken()
-        if (tokenValid) {
+    onAccept: async () => {
+      const tokenValid = checkToken()
+      if (tokenValid) {
+        try {
+
+          
+          // 1. Primero actualizar los datos del usuario
           const updatedUser = await userService.updateUser(tempUser);
-          if (updatedUser?.detail) {
-            let msg;
-            if (Array.isArray(updatedUser.detail)) {
-              msg = updatedUser.detail[0]?.msg;
-            } else {
-              msg = updatedUser.detail;
-            }
-            toast.error(msg ?? "Error al actualizar usuario", {
-              position: "bottom-right",
-              autoClose: 3000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              theme: "light",
-            })
-            return;
+
+
+          // 2. Si se ingresó una nueva contraseña, cambiarla
+          let passwordChanged = false;
+          if (tempUser._newPassword && tempUser._newPassword.trim() !== '' && 
+              tempUser._currentPassword && tempUser._currentPassword.trim() !== '') {
+
+            
+
+            await userService.changePassword(
+              tempUser.mail, 
+              tempUser._currentPassword, // Contraseña actual
+              tempUser._newPassword       // Nueva contraseña
+            );
+            
+            passwordChanged = true;
+
+          } else if (tempUser._newPassword && tempUser._newPassword.trim() !== '') {
+
           }
-          toast.success("Usuario actualizado con éxito", {
+
+          // ✅ MENSAJE DE ÉXITO
+          let successMessage = "Usuario actualizado correctamente";
+          if (passwordChanged) {
+            successMessage = "Usuario actualizado y contraseña cambiada con éxito";
+          }
+          
+          toast.success(successMessage, {
             position: "bottom-right",
-            autoClose: 3000,
+            autoClose: 5000,
             hideProgressBar: false,
             closeOnClick: true,
             pauseOnHover: true,
             draggable: true,
             theme: "light",
           })
+          
           setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
-        } else {
-          console.log('No se pudo concretar la operación, el token es invalido')
+          
+        } catch (error) {
+
+          
+          let errorMessage = "Error al actualizar usuario";
+          if (error && typeof error === 'object' && error.message) {
+            errorMessage = error.message;
+          }
+          
+          toast.error(errorMessage, {
+            position: "bottom-right",
+            autoClose: 7000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "light",
+          })
         }
-      },
+      } else {
+        toast.error("Token inválido - No se pudo completar la operación", {
+          position: "bottom-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "light",
+        })
+      }
+  },
       cancelText: "Cancelar",
       acceptText: "Guardar"
     });
