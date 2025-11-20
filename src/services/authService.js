@@ -17,6 +17,46 @@ export const authService = {
           password 
         })
       });
+      console.log('Respuesta login:', response);
+      if (response.status === 401) {
+        return {
+          error: true,
+          status: 401,
+          message: "Email o contraseña incorrectos"
+        };
+      }
+
+      if (response.status === 404) {
+        return {
+          error: true,
+          status: 404,
+          message: "Credenciales inválidas"
+        };
+      }
+
+      if (response.status === 422) {
+        return {
+          error: true,
+          status: 422,
+          message: "Datos inválidos. Por favor revisa el formulario."
+        };
+      }
+
+      if (response.status === 423) {
+        return {
+          error: true,
+          status: 423,
+          message: "Tu cuenta ha sido bloqueada temporalmente por múltiples intentos fallidos. Por favor, inténtalo nuevamente en unos minutos."
+        };
+      }
+
+      if (response.status === 500) {
+        return {
+          error: true,
+          status: 500,
+          message: "Error interno del servidor. Intenta nuevamente."
+        };
+      }
 
       const token = await response.json();
       let decodedJWT = null;
