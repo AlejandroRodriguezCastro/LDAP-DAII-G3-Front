@@ -80,8 +80,69 @@ export const authService = {
   },
 
   recoverPassword: async (email) => {
-    console.log('No implementado', email)
-    return { success: true };
+    try {
+      const response = await fetch(`${API_URL}/v1/user/request-password-recovery`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mail: email }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.message || 'No se pudo solicitar recuperación de contraseña');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error en recoverPassword:', error);
+      throw error;
+    }
+  },
+
+  resetPassword: async (token, password) => {
+    try {
+      // El backend espera { token, new_password }
+      const body = { token, new_password: password };
+      const response = await fetch(`${API_URL}/v1/user/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        // Construir mensaje legible a partir de la estructura { detail: [ { msg, loc, ... } ] }
+        let message = 'No se pudo restablecer la contraseña';
+        if (err) {
+          if (Array.isArray(err.detail)) {
+            message = err.detail
+              .map((d) => {
+                const locParts = Array.isArray(d.loc) ? d.loc : [];
+                // Si el error es sobre 'new_password', mostrar mensaje genérico en español
+                if (locParts.includes('new_password')) {
+                  const minLen = d.ctx && d.ctx.min_length ? d.ctx.min_length : null;
+                  return minLen
+                    ? `La contraseña debe tener al menos ${minLen} caracteres`
+                    : 'La contraseña no cumple los requisitos mínimos';
+                }
+                const loc = locParts.length ? locParts.join('.') : '';
+                return d.msg ? `${loc ? loc + ': ' : ''}${d.msg}` : JSON.stringify(d);
+              })
+              .join('; ');
+          } else if (err.detail && typeof err.detail === 'string') {
+            message = err.detail;
+          } else if (err.message) {
+            message = err.message;
+          }
+        }
+        throw new Error(message);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error en resetPassword:', error);
+      throw error;
+    }
   },
 
   logout: () => {

@@ -2,7 +2,7 @@
 .btn {
   width: 100%;
   padding: 0.7rem;
-  background-color: #4f46e5;
+  background-color: #04BF8A;
   color: white;
   border: none;
   border-radius: 8px;
@@ -12,5 +12,5 @@
 }
 
 .btn:hover {
-  background-color: #4338ca;
+  background-color: #03a64a;
 }

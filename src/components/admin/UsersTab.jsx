@@ -9,6 +9,7 @@ import UserFormModalContent from "./UserFormModalContent";
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { useCheckToken } from "../hooks/checkToken";
+import Loading from "../Loading/Loading";
 
 const UsersTab = () => {
   const [users, setUsers] = useState([])
@@ -16,6 +17,7 @@ const UsersTab = () => {
   const [organizationsOptions, setOrganizationsOptions] = useState([])
   const [newUser, setNewUser] = useState({ first_name: "", last_name: "", mail: "", roles: null, organization: "", is_active: true })
   const [isAdmin, setIsAdmin] = useState(false)
+  const [loading, setLoading] = useState(true);
   const { showModal } = useContext(ModalContext);
   const activeRoles = localStorage.getItem("activeRoles");
   const userData = JSON.parse(localStorage.getItem("userData"))
@@ -29,8 +31,9 @@ const UsersTab = () => {
       role.name.includes("super") && role.organization === "admin"
     );
     setIsAdmin(isAdmin)
-
+  
     const loadData = async () => {
+      setLoading(true);
       const validToken = checkToken()
       if (validToken) {
         try {
@@ -57,6 +60,7 @@ const UsersTab = () => {
         } catch (error) {
           console.error("Error loading data:", error);
         }
+        setLoading(false);
       } else {
         console.log('No se pudo concretar la operación, el token es inválido')
       }
@@ -134,42 +138,83 @@ const UsersTab = () => {
           organizations={organizationsOptions}
         />
       ),
-      onAccept: async () => {
-        const tokenValid = checkToken()
-        if (tokenValid) {
+    onAccept: async () => {
+      const tokenValid = checkToken()
+      if (tokenValid) {
+        try {
+
+          
+          // 1. Primero actualizar los datos del usuario
           const updatedUser = await userService.updateUser(tempUser);
-          if (updatedUser?.detail) {
-            let msg;
-            if (Array.isArray(updatedUser.detail)) {
-              msg = updatedUser.detail[0]?.msg;
-            } else {
-              msg = updatedUser.detail;
-            }
-            toast.error(msg ?? "Error al actualizar usuario", {
-              position: "bottom-right",
-              autoClose: 3000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              theme: "light",
-            })
-            return;
+
+
+          // 2. Si se ingresó una nueva contraseña, cambiarla
+          let passwordChanged = false;
+          if (tempUser._newPassword && tempUser._newPassword.trim() !== '' && 
+              tempUser._currentPassword && tempUser._currentPassword.trim() !== '') {
+
+            
+
+            await userService.changePassword(
+              tempUser.mail, 
+              tempUser._currentPassword, // Contraseña actual
+              tempUser._newPassword       // Nueva contraseña
+            );
+            
+            passwordChanged = true;
+
+          } else if (tempUser._newPassword && tempUser._newPassword.trim() !== '') {
+
           }
-          toast.success("Usuario actualizado con éxito", {
+
+          // ✅ MENSAJE DE ÉXITO
+          let successMessage = "Usuario actualizado correctamente";
+          if (passwordChanged) {
+            successMessage = "Usuario actualizado y contraseña cambiada con éxito";
+          }
+          
+          toast.success(successMessage, {
             position: "bottom-right",
-            autoClose: 3000,
+            autoClose: 5000,
             hideProgressBar: false,
             closeOnClick: true,
             pauseOnHover: true,
             draggable: true,
             theme: "light",
           })
+          
           setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
-        } else {
-          console.log('No se pudo concretar la operación, el token es invalido')
+          
+        } catch (error) {
+
+          
+          let errorMessage = "Error al actualizar usuario";
+          if (error && typeof error === 'object' && error.message) {
+            errorMessage = error.message;
+          }
+          
+          toast.error(errorMessage, {
+            position: "bottom-right",
+            autoClose: 7000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "light",
+          })
         }
-      },
+      } else {
+        toast.error("Token inválido - No se pudo completar la operación", {
+          position: "bottom-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "light",
+        })
+      }
+  },
       cancelText: "Cancelar",
       acceptText: "Guardar"
     });
@@ -215,9 +260,9 @@ const UsersTab = () => {
           Crear usuario
         </button>
       </div>
-      <div className="users-wrapper">
+      { loading ? <Loading type="bar" /> : <div className="users-wrapper">
         <UsersTable users={users} handleEdit={handleEdit} handleDelete={handleDelete} roleOptions={roleOptions} organizationsOptions={organizationsOptions} isAdmin={isAdmin} />
-      </div>
+      </div>}
     </div>
   );
 };
