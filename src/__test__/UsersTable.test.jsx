@@ -63,7 +63,7 @@ describe("UsersTable", () => {
     render(<UsersTable users={[]} />);
 
     expect(
-      screen.getByText("No se encontraron usuarios.")
+      screen.getByText("No se encontraron usuarios con los filtros aplicados.")
     ).toBeInTheDocument();
   });
 });

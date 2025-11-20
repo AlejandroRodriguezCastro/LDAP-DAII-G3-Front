@@ -15,6 +15,7 @@ const UsersTab = () => {
   const [roleOptions, setRoleOptions] = useState([])
   const [organizationsOptions, setOrganizationsOptions] = useState([])
   const [newUser, setNewUser] = useState({ first_name: "", last_name: "", mail: "", roles: null, organization: "", is_active: true })
+  const [isAdmin, setIsAdmin] = useState(false)
   const { showModal } = useContext(ModalContext);
   const activeRoles = localStorage.getItem("activeRoles");
   const userData = JSON.parse(localStorage.getItem("userData"))
@@ -27,6 +28,7 @@ const UsersTab = () => {
     const isAdmin = roles.some(role =>
       role.name.includes("super") && role.organization === "admin"
     );
+    setIsAdmin(isAdmin)
 
     const loadData = async () => {
       const validToken = checkToken()
@@ -214,7 +216,7 @@ const UsersTab = () => {
         </button>
       </div>
       <div className="users-wrapper">
-        <UsersTable users={users} handleEdit={handleEdit} handleDelete={handleDelete} />
+        <UsersTable users={users} handleEdit={handleEdit} handleDelete={handleDelete} roleOptions={roleOptions} organizationsOptions={organizationsOptions} isAdmin={isAdmin} />
       </div>
     </div>
   );
