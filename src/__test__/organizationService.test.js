@@ -2,7 +2,7 @@
 import { organizationService } from "../services/organizationService";
 
 global.fetch = jest.fn();
-const API_URL = "http://ec2-13-217-71-142.compute-1.amazonaws.com:8081/v1";
+const API_URL = "https://auth.grupoldap.com.ar/v1";
 
 describe("organizationService", () => {
   beforeEach(() => {
