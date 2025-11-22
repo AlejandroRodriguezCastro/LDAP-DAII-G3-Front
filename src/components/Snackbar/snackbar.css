@@ -1,0 +1,53 @@
+.snackbar {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+
+  min-width: 280px;
+  max-width: 420px;
+
+  padding: 14px 20px;
+  border-radius: 10px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  font-size: 16px;
+  font-weight: 500;
+  color: white;
+
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.35s ease;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.snackbar.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Tipos */
+.snackbar.error {
+  background: #d83030;
+}
+
+.snackbar.warning {
+  background: #f79f00;
+}
+
+.snackbar.info {
+  background: #2f2f2f;
+}
+
+/* Icono */
+.snackbar__icon {
+  font-size: 20px;
+}
+
+.snackbar__message {
+  flex: 1;
+}

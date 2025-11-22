@@ -9,6 +9,8 @@ import AuthLayout from "../components/AuthLayout.jsx";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import "./auth.css";
 import { authService } from "../services/authService.js";
+import { useSnackbar } from "../components/Snackbar/SnackbarContext";
+
 
 const schema = yup.object({
   email: yup
@@ -22,6 +24,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const { showError } = useSnackbar();
 
   const {
     register,
@@ -34,12 +37,16 @@ const Login = () => {
   const onSubmit = async (data) => {
     try {
       setError(''); // Limpiar error previo
-      const { user: decodedJWT } = await authService.login(data);
-      
+      const { user: decodedJWT, error, message } = await authService.login(data);
+      console.log('Login status', status);
+      if (error) {
+        showError(message);
+        return;
+      }
       // 🔑 Redirección según roles del JWT
       // if (decodedJWT.roles && (decodedJWT.roles.includes("super_admin_write") || decodedJWT.roles.includes("super_admin_read"))) {
-        console.log('Redirigiendo a admin...');
-        navigate("/admin");
+      console.log('Redirigiendo a admin...');
+      navigate("/admin");
       // } else {
       //   console.log('Redirigiendo a home...');
       //   navigate("/home");
