@@ -308,5 +308,236 @@ describe("userService", () => {
     
     await expect(userService.deleteUser("test@test.com")).rejects.toThrow("Network error");
   });
-  
+  // services/__tests__/userService.test.js
+
+// ... (los tests existentes que ya tienes)
+
+// --- TESTS ADICIONALES PARA MEJORAR COBERTURA ---
+
+describe('userService - Tests adicionales para mejorar cobertura', () => {
+  beforeEach(() => {
+    fetch.mockClear();
+    localStorage.clear();
+    Storage.prototype.getItem = jest.fn();
+    Storage.prototype.setItem = jest.fn();
+  });
+
+  // --- TESTS PARA CAMBIAR CONTRASEÑA ---
+  describe('changePassword', () => {
+    it('changePassword cambia contraseña exitosamente', async () => {
+      const mockResponse = { message: 'Contraseña cambiada exitosamente' };
+      localStorage.getItem.mockReturnValue('fake-token');
+      
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        text: async () => JSON.stringify(mockResponse),
+      });
+
+      const result = await userService.changePassword(
+        'test@test.com',
+        'oldPass123',
+        'newPass123'
+      );
+
+      expect(result).toEqual(mockResponse);
+      expect(fetch).toHaveBeenCalledWith(
+        'https://auth.grupoldap.com.ar/v1/user/change-password',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            Authorization: 'Bearer fake-token',
+            'X-Request-Name': 'changePassword',
+          }),
+          body: JSON.stringify({
+            mail: 'test@test.com',
+            old_password: 'oldPass123',
+            new_password: 'newPass123'
+          }),
+        })
+      );
+    });
+
+    it('changePassword lanza error cuando faltan parámetros', async () => {
+      await expect(userService.changePassword('', '', ''))
+        .rejects.toThrow('Email, contraseña actual y nueva contraseña son requeridos');
+      
+      await expect(userService.changePassword('test@test.com', '', 'newPass123'))
+        .rejects.toThrow('Email, contraseña actual y nueva contraseña son requeridos');
+      
+      await expect(userService.changePassword('test@test.com', 'oldPass123', ''))
+        .rejects.toThrow('Email, contraseña actual y nueva contraseña son requeridos');
+    });
+
+    it('changePassword maneja error con detail como array', async () => {
+      const errorResponse = {
+        detail: [{ msg: 'La contraseña debe tener al menos 8 caracteres' }]
+      };
+      
+      localStorage.getItem.mockReturnValue('fake-token');
+      fetch.mockResolvedValueOnce({
+        ok: false,
+        text: async () => JSON.stringify(errorResponse),
+      });
+
+      await expect(userService.changePassword(
+        'test@test.com',
+        'oldPass123',
+        'short'
+      )).rejects.toThrow('La contraseña debe tener al menos 8 caracteres');
+    });
+
+    it('changePassword maneja error con detail como string', async () => {
+      const errorResponse = {
+        detail: 'Contraseña actual incorrecta'
+      };
+      
+      localStorage.getItem.mockReturnValue('fake-token');
+      fetch.mockResolvedValueOnce({
+        ok: false,
+        text: async () => JSON.stringify(errorResponse),
+      });
+
+      await expect(userService.changePassword(
+        'test@test.com',
+        'wrongPass',
+        'newPass123'
+      )).rejects.toThrow('Contraseña actual incorrecta');
+    });
+
+    it('changePassword maneja error con detail como objeto', async () => {
+      const errorResponse = {
+        detail: { error: 'invalid_password', message: 'Contraseña inválida' }
+      };
+      
+      localStorage.getItem.mockReturnValue('fake-token');
+      fetch.mockResolvedValueOnce({
+        ok: false,
+        text: async () => JSON.stringify(errorResponse),
+      });
+
+      await expect(userService.changePassword(
+        'test@test.com',
+        'oldPass123',
+        'newPass123'
+      )).rejects.toThrow('{"error":"invalid_password","message":"Contraseña inválida"}');
+    });
+
+    it('changePassword maneja error con message field', async () => {
+      const errorResponse = {
+        message: 'Usuario no encontrado'
+      };
+      
+      localStorage.getItem.mockReturnValue('fake-token');
+      fetch.mockResolvedValueOnce({
+        ok: false,
+        text: async () => JSON.stringify(errorResponse),
+      });
+
+      await expect(userService.changePassword(
+        'nonexistent@test.com',
+        'oldPass123',
+        'newPass123'
+      )).rejects.toThrow('Usuario no encontrado');
+    });
+
+    it('changePassword maneja error con texto plano', async () => {
+      localStorage.getItem.mockReturnValue('fake-token');
+      fetch.mockResolvedValueOnce({
+        ok: false,
+        text: async () => 'Internal Server Error',
+      });
+
+      await expect(userService.changePassword(
+        'test@test.com',
+        'oldPass123',
+        'newPass123'
+      )).rejects.toThrow('Internal Server Error');
+    });
+
+    it('changePassword maneja excepción de red', async () => {
+      localStorage.getItem.mockReturnValue('fake-token');
+      fetch.mockRejectedValueOnce(new Error('Network error'));
+
+      await expect(userService.changePassword(
+        'test@test.com',
+        'oldPass123',
+        'newPass123'
+      )).rejects.toThrow('Network error');
+    });
+
+    it('changePassword maneja error string directamente', async () => {
+      localStorage.getItem.mockReturnValue('fake-token');
+      
+      // Simular que fetch rechaza con un string en lugar de Error
+      fetch.mockRejectedValueOnce('Error directo');
+
+      await expect(userService.changePassword(
+        'test@test.com',
+        'oldPass123',
+        'newPass123'
+      )).rejects.toThrow('Error directo');
+    });
+
+    it('changePassword maneja error como objeto genérico', async () => {
+      localStorage.getItem.mockReturnValue('fake-token');
+      
+      // Simular que fetch rechaza con un objeto genérico
+      const genericError = { code: 500, message: 'Server error' };
+      fetch.mockRejectedValueOnce(genericError);
+
+      await expect(userService.changePassword(
+        'test@test.com',
+        'oldPass123',
+        'newPass123'
+      )).rejects.toThrow('{"code":500,"message":"Server error"}');
+    });
+  });
+
+  // --- TESTS PARA CASOS BORDE EN createUser ---
+  describe('createUser - Casos borde', () => {
+    it('createUser maneja localStorage sin userData', async () => {
+      const mockUser = { 
+        mail: 'test@test.com',
+        roles: ['user']
+      };
+      
+      localStorage.getItem.mockImplementation((key) => {
+        if (key === 'authToken') return 'fake-token';
+        return null; // Sin userData
+      });
+      
+      fetch.mockResolvedValueOnce({
+        json: async () => ({ ...mockUser, id: 1 }),
+      });
+
+      await userService.createUser(mockUser);
+      
+      const requestBody = JSON.parse(fetch.mock.calls[0][1].body);
+      expect(requestBody.organization).toBe('admin');
+      expect(requestBody.password).toBe('userpass123!');
+    });
+
+    it('createUser maneja userData vacío en localStorage', async () => {
+      const mockUser = { 
+        mail: 'test@test.com',
+        roles: ['user']
+      };
+      
+      localStorage.getItem.mockImplementation((key) => {
+        if (key === 'authToken') return 'fake-token';
+        if (key === 'userData') return '{}'; // userData vacío
+        return null;
+      });
+      
+      fetch.mockResolvedValueOnce({
+        json: async () => ({ ...mockUser, id: 1 }),
+      });
+
+      await userService.createUser(mockUser);
+      
+      const requestBody = JSON.parse(fetch.mock.calls[0][1].body);
+      expect(requestBody.organization).toBe('admin');
+    });
+  });
+});
 });
