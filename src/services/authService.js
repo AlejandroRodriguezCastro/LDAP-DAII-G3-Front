@@ -3,8 +3,59 @@ import { jwtDecode } from 'jwt-decode';
 import { API_URL } from '../config/api';
 import { userService } from './userService';
 
+// Manejador de errores específico para login
+const handleLoginError = (error) => {
+  // Si no hay respuesta del servidor (error de conexión)
+  if (!error.response) {
+    return 'Error de conexión - Verifique su internet o que el servidor esté activo';
+  }
+
+  const { status } = error.response;
+  let responseData;
+  
+  // Intentar obtener los datos de la respuesta
+  try {
+    responseData = error.response.data;
+  } catch {
+    responseData = null;
+  }
+
+  switch (status) {
+    case 307:
+      return 'Usuario sin permisos - Contacte al administrador';
+    case 400:
+      return 'Datos de login incorrectos - Verifique el formato';
+    
+    case 401:
+      return 'Email o contraseña incorrectos';
+    
+    case 403:
+      return 'Cuenta desactivada o sin permisos - Contacte al administrador';
+
+    case 404:
+      return 'Servicio de autenticación no disponible';
+    
+    case 422:
+      return 'Datos de entrada inválidos';
+    
+    case 429:
+      return 'Demasiados intentos - Espere unos minutos';
+    
+    case 500:
+      return 'Error interno del servidor - Intente más tarde';
+    
+    case 502:
+    case 503:
+    case 504:
+      return 'Servicio temporalmente no disponible';
+    
+    default:
+      return `Error ${status}: ${responseData?.message || 'Error inesperado durante el login'}`;
+  }
+};
+
 export const authService = {
-  login: async ({ email, password }, isCallback ) => {
+  login: async ({ email, password }, isCallback) => {
     try {
       const response = await fetch(`${API_URL}/v1/auth/token`, {
         method: 'POST',
@@ -17,6 +68,23 @@ export const authService = {
           password 
         })
       });
+
+      // Manejar respuestas no exitosas
+      if (!response.ok) {
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch {
+          errorData = { message: 'Error en la respuesta del servidor' };
+        }
+        
+        throw {
+          response: {
+            status: response.status,
+            data: errorData
+          }
+        };
+      }
 
       const token = await response.json();
       let decodedJWT = null;
@@ -34,14 +102,13 @@ export const authService = {
         }
       }
 
-      if (!response.ok) {
-        throw new Error('Error al iniciar sesión');
-      }
-
       return { success: true, token, user: decodedJWT };
     } catch (error) {
       console.error('Error en login:', error);
-      throw error;
+      
+      // Aplicar el manejo de errores con switch case
+      const userFriendlyError = handleLoginError(error);
+      throw new Error(userFriendlyError);
     }
   },
 
@@ -54,16 +121,25 @@ export const authService = {
         },
         body: JSON.stringify({ jwt_token: token })
       });
+      
       if (!response.ok) {
-        throw new Error('Token inválido');
+        throw {
+          response: {
+            status: response.status,
+            data: { message: 'Token inválido' }
+          }
+        };
       }
+      
       return { success: true };
     } catch (error) {
       console.error('Error en validateToken:', error);
-      return { success: false, error: error.message };
+      const userFriendlyError = handleLoginError(error);
+      return { success: false, error: userFriendlyError };
     }
   },
 
+  // ... (el resto de tus métodos permanecen igual - register, recoverPassword, resetPassword, etc.)
   register: async ({ email, password, name }) => {
     if (email === "test@citypass.com") {
       throw new Error("El email ya está registrado");
